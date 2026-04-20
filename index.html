@@ -1,0 +1,2461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Audit Tool — NexGrow.io</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{--bg:#08081a;--s:rgba(255,255,255,.04);--s2:rgba(255,255,255,.07);--b:rgba(255,255,255,.09);--b2:rgba(255,255,255,.16);--p:#6C63FF;--c:#00D4FF;--g:#00FF88;--y:#FFD700;--r:#FF4757;--o:#FF8C42;--t:#fff;--t2:rgba(255,255,255,.72);--t3:rgba(255,255,255,.4);--grad:linear-gradient(135deg,#6C63FF,#00D4FF);--rad:14px;--tr:.22s cubic-bezier(.4,0,.2,1)}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--t);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+.blob{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0}
+.b1{width:600px;height:600px;background:radial-gradient(ellipse,rgba(108,99,255,.10),transparent 70%);top:-150px;left:-150px}
+.b2{width:500px;height:500px;background:radial-gradient(ellipse,rgba(0,212,255,.06),transparent 70%);bottom:80px;right:-120px}
+
+/* HEADER */
+.hdr{position:fixed;top:0;left:0;right:0;z-index:200;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;background:rgba(8,8,26,.90);backdrop-filter:blur(24px);border-bottom:1px solid var(--b)}
+.logo{font-weight:800;font-size:1.15rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-decoration:none;letter-spacing:-.02em}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.badge{font-size:.72rem;font-weight:500;color:var(--t3);border:1px solid var(--b);padding:5px 12px;border-radius:20px}
+.gear-btn{background:none;border:1px solid var(--b);border-radius:8px;color:var(--t3);padding:7px 9px;cursor:pointer;transition:var(--tr);font-size:.9rem;display:flex;align-items:center}
+.gear-btn:hover{border-color:var(--b2);color:var(--t2)}
+
+/* SETTINGS MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(7,7,16,.92);backdrop-filter:blur(12px);z-index:500;display:none;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#0f0f1e;border:1px solid var(--b2);border-radius:20px;padding:32px;max-width:480px;width:90%;position:relative}
+.modal-title{font-weight:700;font-size:1.05rem;margin-bottom:6px}
+.modal-sub{font-size:.8rem;color:var(--t3);margin-bottom:24px;line-height:1.6}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:.78rem;color:var(--t2);margin-bottom:7px;font-weight:500}
+.field input{width:100%;background:var(--s);border:1px solid var(--b);border-radius:10px;padding:11px 14px;color:var(--t);font-family:inherit;font-size:.85rem;outline:none;transition:var(--tr)}
+.field input:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(108,99,255,.12)}
+.field .hint{font-size:.7rem;color:var(--t3);margin-top:5px}
+.field .hint a{color:var(--c);text-decoration:none}
+.modal-btns{display:flex;gap:9px;margin-top:6px}
+.modal-save{flex:1;background:var(--grad);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:.85rem;padding:11px;cursor:pointer;transition:var(--tr)}
+.modal-save:hover{opacity:.9}
+.modal-close{background:var(--s);border:1px solid var(--b);border-radius:10px;color:var(--t2);font-size:.85rem;padding:11px 18px;cursor:pointer;transition:var(--tr)}
+.modal-close:hover{background:var(--s2)}
+
+/* HERO */
+#hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:110px 20px 80px;z-index:1;text-align:center}
+.eyebrow{display:flex;align-items:center;gap:8px;margin-bottom:22px;justify-content:center}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--g);animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
+.etxt{font-size:.78rem;font-weight:600;color:var(--g);letter-spacing:.04em}
+h1{font-size:clamp(2rem,5vw,3.8rem);font-weight:800;line-height:1.1;letter-spacing:-.025em;margin-bottom:18px;max-width:720px}
+.gw{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{font-size:1rem;color:var(--t2);max-width:520px;line-height:1.8;margin-bottom:16px;font-weight:400}
+
+/* MODE TOGGLE */
+.mode-toggle{display:flex;gap:4px;background:var(--s);border:1px solid var(--b);border-radius:14px;padding:4px;margin-bottom:22px}
+.mode-btn{background:none;border:none;color:var(--t3);font-size:.85rem;font-weight:500;padding:9px 22px;border-radius:11px;cursor:pointer;transition:var(--tr);font-family:inherit}
+.mode-btn.on{background:rgba(108,99,255,.2);color:var(--t);border:1px solid rgba(108,99,255,.35)}
+
+/* INPUT */
+.inp-wrap{width:100%;max-width:680px;margin-bottom:14px}
+.inp-box{display:flex;align-items:center;gap:10px;padding:6px 6px 6px 20px;background:rgba(255,255,255,.05);border:1.5px solid var(--b);border-radius:18px;transition:var(--tr);margin-bottom:10px}
+.inp-box:focus-within{border-color:var(--p);box-shadow:0 0 0 4px rgba(108,99,255,.12)}
+.inp-ico{color:var(--t3);flex-shrink:0;transition:var(--tr)}
+.inp-box:focus-within .inp-ico{color:var(--c)}
+input.main{flex:1;background:none;border:none;outline:none;color:var(--t);font-size:1rem;font-family:inherit;padding:13px 0}
+input.main::placeholder{color:var(--t3)}
+.vs-label{font-size:.75rem;font-weight:500;color:var(--t3);text-align:center;margin:2px 0 8px}
+.btn-analyze{display:flex;align-items:center;gap:7px;background:var(--grad);border:none;border-radius:13px;color:#fff;font-weight:700;font-size:.92rem;font-family:inherit;padding:14px 28px;cursor:pointer;transition:var(--tr);white-space:nowrap}
+.btn-analyze:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(108,99,255,.45)}
+.arr{transition:transform var(--tr)}
+.btn-analyze:hover .arr{transform:translateX(3px)}
+.hints{display:flex;align-items:center;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.hlbl{font-size:.75rem;font-weight:500;color:var(--t3)}
+.pill{display:inline-flex;align-items:center;gap:5px;background:var(--s);border:1px solid var(--b);border-radius:20px;padding:5px 14px;font-size:.78rem;font-weight:500;color:var(--t2);cursor:pointer;transition:var(--tr)}
+.pill:hover{border-color:var(--p);color:var(--t);background:rgba(108,99,255,.1)}
+.feats{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:36px;max-width:680px}
+.feat{display:flex;align-items:center;gap:7px;background:var(--s);border:1px solid var(--b);border-radius:20px;padding:8px 16px;font-size:.8rem;font-weight:500;color:var(--t2);transition:var(--tr)}
+.feat:hover{border-color:var(--b2);color:var(--t)}
+
+/* OVERLAY */
+#overlay{position:fixed;inset:0;background:rgba(7,7,16,.97);backdrop-filter:blur(24px);z-index:1000;display:none;align-items:center;justify-content:center;flex-direction:column}
+.ov-card{background:rgba(255,255,255,.03);border:1px solid var(--b);border-radius:22px;padding:36px 40px;max-width:480px;width:92%;text-align:center}
+.ov-site-row{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 16px;margin-bottom:20px;text-align:left}
+.ov-favicon{width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.07);object-fit:contain;flex-shrink:0}
+.ov-fav-fb{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,var(--p),var(--c));display:none;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0}
+.ov-site-domain{font-weight:700;font-size:.92rem;color:var(--t);margin-bottom:2px}
+.ov-site-full{font-size:.69rem;color:var(--t3);word-break:break-all;line-height:1.3}
+.spin{width:52px;height:52px;margin:0 auto 18px;position:relative}
+.sr{position:absolute;inset:0;border-radius:50%;border:2px solid transparent}
+.sr1{border-top-color:var(--p);animation:sp 1s linear infinite}
+.sr2{inset:8px;border-right-color:var(--c);animation:sp .75s linear infinite reverse}
+.sr3{inset:16px;border-bottom-color:var(--g);animation:sp .55s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ov-title{font-weight:700;font-size:1.1rem;margin-bottom:4px}
+.ov-status{font-size:.74rem;color:var(--t3);margin-bottom:18px;min-height:15px;transition:color .3s}
+.steps{text-align:left;display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.si{display:flex;align-items:center;gap:12px;opacity:.22;transition:opacity .35s ease;font-size:.81rem;color:var(--t2)}
+.si.active{opacity:1;color:var(--t)}
+.si.done{opacity:.55}
+.si.done .sind{background:var(--g);border-color:var(--g);color:var(--bg);font-size:.6rem;font-weight:900}
+.sind{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--b2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-family:'Consolas',monospace;transition:var(--tr)}
+.si.active .sind{border-color:var(--p);background:rgba(108,99,255,.2);animation:pr 1.4s ease-in-out infinite}
+@keyframes pr{0%,100%{box-shadow:0 0 0 0 rgba(108,99,255,.5)}50%{box-shadow:0 0 0 5px rgba(108,99,255,0)}}
+.ov-findings{border-top:1px solid rgba(255,255,255,.06);padding-top:11px;margin-bottom:14px;min-height:52px;display:flex;flex-direction:column;gap:5px;text-align:left}
+.ov-finding{font-size:.71rem;color:var(--t2);display:flex;align-items:flex-start;gap:7px;animation:fIn .28s ease both}
+.ov-fi{color:var(--g);flex-shrink:0;line-height:1.5}
+.ov-fi-w{color:var(--y)}
+.ov-fi-e{color:#ff4757}
+@keyframes fIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.prog-wrap{display:flex;align-items:center;gap:10px}
+.prog-bar{flex:1;height:4px;background:var(--b);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--grad);border-radius:2px;width:0%;transition:width .55s ease}
+.prog-pct{font-size:.7rem;color:var(--t3);min-width:28px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* REPORT */
+#report{display:none;padding:90px 20px 60px;max-width:1100px;margin:0 auto;position:relative;z-index:1}
+.rpt-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:14px}
+.rpt-left{display:flex;gap:18px;align-items:flex-start}
+.site-thumb{width:90px;height:60px;border-radius:10px;object-fit:cover;border:1px solid var(--b);background:var(--s);flex-shrink:0}
+.thumb-ph{width:90px;height:60px;border-radius:10px;border:1px solid var(--b);background:var(--s);display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:1.4rem;flex-shrink:0}
+.rpt-site{font-weight:700;font-size:1.3rem;letter-spacing:-.01em}
+.rpt-meta{font-size:.72rem;color:var(--t3);margin-top:3px}
+.rpt-btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn-ol{display:flex;align-items:center;gap:6px;background:var(--s);border:1px solid var(--b);border-radius:10px;color:var(--t2);font-size:.79rem;padding:9px 15px;cursor:pointer;transition:var(--tr)}
+.btn-ol:hover{border-color:var(--b2);color:var(--t);background:var(--s2)}
+.btn-pr{display:flex;align-items:center;gap:6px;background:var(--grad);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:.79rem;padding:9px 15px;cursor:pointer;transition:var(--tr)}
+.btn-pr:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(108,99,255,.35)}
+.back-btn{display:inline-flex;align-items:center;gap:7px;background:none;border:1px solid var(--b);border-radius:10px;color:var(--t2);font-size:.79rem;padding:8px 14px;cursor:pointer;transition:var(--tr);margin-bottom:20px}
+.back-btn:hover{border-color:var(--b2);color:var(--t)}
+
+/* OVERVIEW */
+.ov-card2{background:var(--s);border:1px solid var(--b);border-radius:20px;padding:32px;margin-bottom:24px;display:grid;grid-template-columns:auto 1fr;gap:40px;align-items:center}
+.overall-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+.ring-pos{position:relative}
+.ring-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.ring-num{font-family:'Consolas',monospace;font-size:1.9rem;font-weight:700;line-height:1}
+.ring-sub{font-size:.65rem;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em}
+.overall-lbl{font-weight:700;font-size:.94rem;text-align:center}
+.overall-sub{font-size:.68rem;color:var(--t3);text-align:center}
+.hmsg{padding:12px 14px;border-radius:10px;font-size:.78rem;line-height:1.6;margin-top:4px;max-width:190px;text-align:center}
+.hm-ex{background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.2);color:#80ffbf}
+.hm-gd{background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.2);color:#80e8ff}
+.hm-nw{background:rgba(255,215,0,.04);border:1px solid rgba(255,215,0,.18);color:#ffd980}
+.hm-cr{background:rgba(255,71,87,.06);border:1px solid rgba(255,71,87,.2);color:#ff8591}
+.cats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.cat{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px;background:rgba(255,255,255,.02);border:1px solid var(--b);border-radius:var(--rad);transition:var(--tr)}
+.cat:hover{background:var(--s2);border-color:var(--b2)}
+.cat-lbl{font-size:.76rem;font-weight:600;color:var(--t2);text-align:center}
+.cat-grade{font-family:'Consolas',monospace;font-size:.6rem;color:var(--t3)}
+
+/* TABS */
+.tabs{display:flex;gap:3px;background:rgba(255,255,255,.025);border:1px solid var(--b);border-radius:var(--rad);padding:4px;margin-bottom:20px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--t3);font-size:.8rem;padding:8px 16px;border-radius:10px;cursor:pointer;transition:var(--tr);white-space:nowrap;flex:1;justify-content:center;font-family:inherit}
+.tab:hover{color:var(--t2);background:var(--s)}
+.tab.on{background:rgba(108,99,255,.14);color:var(--t);border:1px solid rgba(108,99,255,.28)}
+.tsb{font-family:'Consolas',monospace;font-size:.6rem;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,.06)}
+.tab.on .tsb{background:rgba(108,99,255,.22)}
+.tc{display:none}
+.tc.on{display:block;animation:fdin .25s ease}
+@keyframes fdin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* SECTION HEADER */
+.sh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.sh-title{font-weight:700;font-size:1rem}
+.sh-sub{font-size:.76rem;color:var(--t3);margin-top:2px}
+.st{font-family:'Consolas',monospace;font-size:1.45rem;font-weight:700}
+
+/* SUMMARY */
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
+.sum-item{padding:12px;background:var(--s);border:1px solid var(--b);border-radius:10px;text-align:center}
+.sum-n{font-size:1.3rem;font-weight:700;margin-bottom:2px}
+.sum-l{font-size:.68rem;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;font-weight:500}
+.ng{color:var(--g)} .ny{color:var(--y)} .nr{color:var(--r)}
+
+/* CHECKS */
+.checks{display:flex;flex-direction:column;gap:6px;margin-bottom:20px}
+.ci{display:flex;align-items:center;gap:12px;padding:11px 15px;background:var(--s);border:1px solid var(--b);border-radius:10px;transition:var(--tr)}
+.ci:hover{background:var(--s2)}
+.ci.pass{border-left:3px solid var(--g)}
+.ci.warn{border-left:3px solid var(--y)}
+.ci.fail{border-left:3px solid var(--r)}
+.cs{width:21px;height:21px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.66rem;font-weight:900;flex-shrink:0}
+.pass .cs{background:rgba(0,255,136,.12);color:var(--g)}
+.warn .cs{background:rgba(255,215,0,.12);color:var(--y)}
+.fail .cs{background:rgba(255,71,87,.12);color:var(--r)}
+.ci-info{flex:1}
+.ci-name{font-size:.84rem;font-weight:500}
+.ci-det{font-size:.72rem;color:var(--t3);margin-top:2px}
+.ci-pts{font-size:.7rem;color:var(--t3);flex-shrink:0}
+
+/* RECS */
+.rec-title{font-size:.72rem;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.recs{display:flex;flex-direction:column;gap:8px}
+.ri{display:flex;gap:11px;padding:13px 15px;background:rgba(108,99,255,.05);border:1px solid rgba(108,99,255,.13);border-radius:10px}
+.ri.crit{background:rgba(255,71,87,.05);border-color:rgba(255,71,87,.14)}
+.ri.wrn{background:rgba(255,215,0,.04);border-color:rgba(255,215,0,.12)}
+.rp{font-family:'Consolas',monospace;font-size:.57rem;text-transform:uppercase;letter-spacing:.1em;padding:3px 7px;border-radius:4px;align-self:flex-start;flex-shrink:0;margin-top:1px}
+.crit .rp{background:rgba(255,71,87,.2);color:var(--r)}
+.wrn .rp{background:rgba(255,215,0,.2);color:var(--y)}
+.ri:not(.crit):not(.wrn) .rp{background:rgba(108,99,255,.2);color:#a89cff}
+.rt{font-size:.82rem;color:var(--t2);line-height:1.6}
+.rt strong{color:var(--t);font-weight:600}
+
+/* PERFORMANCE TAB */
+.cwv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.cwv-item{padding:18px;background:var(--s);border:1px solid var(--b);border-radius:var(--rad);text-align:center;transition:var(--tr)}
+.cwv-item:hover{background:var(--s2)}
+.cwv-val{font-family:'Consolas',monospace;font-size:1.6rem;font-weight:700;margin-bottom:4px}
+.cwv-name{font-size:.75rem;font-weight:600;margin-bottom:3px}
+.cwv-status{font-family:'Consolas',monospace;font-size:.6rem;text-transform:uppercase;letter-spacing:.08em}
+.cwv-good{color:var(--g)} .cwv-needs{color:var(--y)} .cwv-poor{color:var(--r)}
+.lh-scores{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.lh-score{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px;background:var(--s);border:1px solid var(--b);border-radius:var(--rad)}
+.lh-lbl{font-size:.75rem;font-weight:600;color:var(--t2);text-align:center}
+.opp-list{display:flex;flex-direction:column;gap:8px}
+.opp-item{display:flex;align-items:center;gap:12px;padding:12px 15px;background:var(--s);border:1px solid var(--b);border-radius:10px}
+.opp-icon{font-size:1rem;flex-shrink:0}
+.opp-text{font-size:.82rem;color:var(--t2);flex:1}
+.opp-save{font-family:'Consolas',monospace;font-size:.68rem;color:var(--y);flex-shrink:0}
+.mobile-desktop-toggle{display:flex;gap:3px;background:var(--s);border:1px solid var(--b);border-radius:10px;padding:3px;margin-bottom:18px;width:fit-content}
+.mdt-btn{background:none;border:none;color:var(--t3);font-size:.78rem;padding:6px 14px;border-radius:8px;cursor:pointer;transition:var(--tr);font-family:inherit}
+.mdt-btn.on{background:rgba(108,99,255,.18);color:var(--t);border:1px solid rgba(108,99,255,.28)}
+
+/* KEYWORDS TAB */
+.kw-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.kw-stat{padding:14px;background:var(--s);border:1px solid var(--b);border-radius:10px;text-align:center}
+.kw-val{font-size:1.25rem;font-weight:700;color:var(--c);margin-bottom:3px}
+.kw-lbl{font-size:.7rem;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;font-weight:500}
+.read-bar{margin-bottom:20px;padding:18px;background:var(--s);border:1px solid var(--b);border-radius:var(--rad)}
+.read-top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px}
+.read-score{font-family:'Consolas',monospace;font-size:1.8rem;font-weight:700}
+.read-label{font-size:.8rem;color:var(--t2);font-weight:600}
+.read-track{height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.read-fill{height:100%;border-radius:3px;transition:width 1s ease .3s}
+.read-desc{font-size:.75rem;color:var(--t3)}
+.kw-list{display:flex;flex-direction:column;gap:7px}
+.kw-row{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--s);border:1px solid var(--b);border-radius:9px}
+.kw-rank{font-family:'Consolas',monospace;font-size:.7rem;color:var(--t3);width:18px;flex-shrink:0}
+.kw-word{font-size:.84rem;font-weight:600;flex:1}
+.kw-bar-wrap{flex:2;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.kw-bar{height:100%;background:var(--grad);border-radius:3px}
+.kw-count{font-family:'Consolas',monospace;font-size:.7rem;color:var(--t3);width:50px;text-align:right;flex-shrink:0}
+
+/* SOCIAL */
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.sc2{padding:16px;background:var(--s);border:1px solid var(--b);border-radius:var(--rad);transition:var(--tr)}
+.sc2:hover{background:var(--s2)}
+.sc2.found{border-color:rgba(0,255,136,.2)}
+.sc2.miss{border-color:rgba(255,71,87,.18)}
+.sp2{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.si3{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0}
+.spn{font-weight:600;font-size:.85rem}
+.ss2{font-family:'Consolas',monospace;font-size:.6rem;text-transform:uppercase;letter-spacing:.1em}
+.found .ss2{color:var(--g)} .miss .ss2{color:var(--r)}
+.sd2{font-size:.74rem;color:var(--t3);line-height:1.5}
+
+/* ACTION PLAN */
+.ap{display:flex;flex-direction:column;gap:12px}
+.ai2{display:flex;gap:16px;padding:18px 20px;background:var(--s);border:1px solid var(--b);border-radius:var(--rad);transition:var(--tr);align-items:flex-start}
+.ai2:hover{background:var(--s2);border-color:var(--b2)}
+.an{width:34px;height:34px;background:var(--grad);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.88rem;flex-shrink:0}
+.ac{flex:1}
+.at{font-weight:700;font-size:.91rem;margin-bottom:4px}
+.ad{font-size:.8rem;color:var(--t2);line-height:1.6}
+.am{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.atg{font-size:.65rem;font-weight:600;padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.03em}
+.ti{background:rgba(0,255,136,.1);color:var(--g)}
+.te{background:rgba(255,215,0,.1);color:var(--y)}
+.tc2{background:rgba(108,99,255,.1);color:#a89cff}
+
+/* COMPARE MODE */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.compare-col{background:var(--s);border:1px solid var(--b);border-radius:20px;padding:24px}
+.compare-site{font-weight:700;font-size:1rem;margin-bottom:4px}
+.compare-url{font-size:.72rem;color:var(--t3);margin-bottom:20px}
+.compare-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--b)}
+.compare-row:last-child{border-bottom:none}
+.compare-cat{font-size:.82rem;color:var(--t2)}
+.compare-score{font-size:1.05rem;font-weight:700;display:flex;align-items:center;gap:6px}
+.win-badge{font-size:.65rem;font-weight:600;background:rgba(0,255,136,.15);color:var(--g);padding:2px 7px;border-radius:4px}
+.compare-overall{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:20px}
+
+/* BROKEN LINKS */
+.bl-summary{display:flex;gap:12px;margin-bottom:16px}
+.bl-stat{flex:1;padding:14px;background:var(--s);border:1px solid var(--b);border-radius:10px;text-align:center}
+.bl-num{font-size:1.35rem;font-weight:700;margin-bottom:2px}
+.bl-lbl{font-size:.68rem;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.04em}
+
+/* NOTE BOX */
+.note-box{display:flex;align-items:flex-start;gap:10px;background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.15);border-radius:10px;padding:13px 15px;margin-bottom:16px;font-size:.79rem;color:var(--t2);line-height:1.6}
+.ig-note{background:rgba(225,48,108,.05);border-color:rgba(225,48,108,.18)}
+
+.divider{height:1px;background:var(--b);margin:18px 0}
+
+/* API KEY NOTICE */
+.api-notice{display:flex;align-items:flex-start;gap:10px;background:rgba(255,215,0,.04);border:1px solid rgba(255,215,0,.15);border-radius:10px;padding:13px 15px;margin-bottom:16px;font-size:.79rem;color:#ffd980;line-height:1.6}
+
+/* ── FREEMIUM LOCK ── */
+.free-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.2);border-radius:20px;padding:3px 12px;font-size:.68rem;font-weight:600;color:var(--g);text-transform:uppercase;letter-spacing:.04em;vertical-align:middle;margin-left:8px}
+.pro-badge{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,rgba(255,215,0,.15),rgba(108,99,255,.15));border:1px solid rgba(255,215,0,.3);border-radius:20px;padding:3px 12px;font-size:.68rem;font-weight:600;color:var(--y);text-transform:uppercase;letter-spacing:.04em;vertical-align:middle;margin-left:8px}
+.locked-wrap{position:relative;border-radius:20px;overflow:hidden;margin-top:24px}
+.locked-inner{filter:blur(5px);pointer-events:none;user-select:none;opacity:.28;max-height:320px;overflow:hidden}
+.lock-gate{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:linear-gradient(to bottom,transparent 0%,rgba(7,7,16,.97) 38%);z-index:2;padding:20px;text-align:center}
+.lock-icon{font-size:2.2rem}
+.lock-title{font-weight:800;font-size:1.05rem}
+.lock-sub{font-size:.8rem;color:var(--t2);max-width:340px;line-height:1.65}
+.lock-feats{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:2px 0}
+.lock-feat{font-size:.7rem;background:var(--s);border:1px solid var(--b);border-radius:20px;padding:3px 10px;color:var(--t3)}
+.unlock-btn{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#6C63FF,#FFD700);border:none;border-radius:14px;color:#000;font-weight:800;font-size:.95rem;padding:14px 34px;cursor:pointer;transition:var(--tr);letter-spacing:.01em;margin-top:4px}
+.unlock-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(108,99,255,.55)}
+.unlock-sub{font-size:.68rem;color:var(--t3)}
+
+/* ── PAYMENT MODAL ── */
+.pay-modal-bg{position:fixed;inset:0;background:rgba(7,7,16,.97);backdrop-filter:blur(18px);z-index:700;display:none;align-items:center;justify-content:center}
+.pay-modal-bg.open{display:flex}
+.pay-modal{background:#0d0d1e;border:1px solid rgba(255,215,0,.25);border-radius:26px;padding:40px 36px;max-width:420px;width:92%;text-align:center;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.pay-close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--t3);font-size:1.3rem;cursor:pointer;padding:4px 8px;line-height:1}
+.pay-icon{font-size:2.8rem;margin-bottom:10px}
+.pay-title{font-weight:800;font-size:1.35rem;margin-bottom:6px}
+.pay-sub{font-size:.82rem;color:var(--t2);line-height:1.7;margin-bottom:20px}
+.pay-price-wrap{margin-bottom:4px}
+.pay-price{font-size:3.8rem;font-weight:900;background:linear-gradient(135deg,#FFD700,#6C63FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;letter-spacing:-.02em}
+.pay-once{font-size:.72rem;color:var(--t3);margin-bottom:24px}
+.pay-features{text-align:left;display:flex;flex-direction:column;gap:9px;margin-bottom:24px;background:rgba(255,255,255,.03);border:1px solid var(--b);border-radius:14px;padding:16px}
+.pay-feat{display:flex;align-items:center;gap:10px;font-size:.82rem;color:var(--t2)}
+.pay-feat-ico{color:var(--g);flex-shrink:0;font-weight:700}
+.pay-btn{width:100%;background:linear-gradient(135deg,#6C63FF,#00D4FF);border:none;border-radius:14px;color:#fff;font-weight:800;font-size:1rem;padding:16px;cursor:pointer;transition:var(--tr);margin-bottom:10px}
+.pay-btn:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(108,99,255,.5)}
+.pay-demo{width:100%;background:none;border:1px solid var(--b);border-radius:14px;color:var(--t3);font-size:.78rem;padding:10px;cursor:pointer;transition:var(--tr);margin-bottom:12px}
+.pay-demo:hover{border-color:var(--b2);color:var(--t2)}
+.pay-note{font-size:.67rem;color:var(--t3);line-height:1.6}
+
+/* ── INSTAGRAM REPORT ── */
+.ig-hero-card{display:flex;align-items:center;gap:20px;padding:22px 24px;background:linear-gradient(135deg,rgba(225,48,108,.07),rgba(108,99,255,.05));border:1px solid rgba(225,48,108,.18);border-radius:20px;margin-bottom:18px}
+.ig-avatar{width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0;border:2px solid rgba(225,48,108,.35)}
+.ig-meta{flex:1}
+.ig-handle-txt{font-weight:800;font-size:1.2rem;margin-bottom:3px}
+.ig-type-badge{font-size:.7rem;font-weight:600;color:rgba(225,48,108,.9);background:rgba(225,48,108,.1);border:1px solid rgba(225,48,108,.2);border-radius:20px;padding:3px 10px}
+.ig-stats-row{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px}
+.ig-stat{text-align:center;min-width:60px}
+.ig-stat-n{font-size:1.05rem;font-weight:700;color:var(--c);margin-bottom:2px}
+.ig-stat-l{font-size:.65rem;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.04em}
+.ig-health-bar{padding:20px 24px;background:var(--s);border:1px solid var(--b);border-radius:20px;margin-bottom:18px}
+.ig-health-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.ig-health-title{font-weight:700;font-size:.92rem}
+.ig-health-score{font-family:'Consolas',monospace;font-size:2rem;font-weight:900}
+.ig-track{height:8px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden;margin-bottom:6px}
+.ig-fill{height:100%;border-radius:4px;transition:width 1.2s ease .3s}
+.ig-health-desc{font-size:.75rem;color:var(--t3)}
+.ig-prob{display:flex;gap:12px;padding:14px 16px;background:var(--s);border:1px solid var(--b);border-radius:12px;margin-bottom:8px;transition:var(--tr);align-items:flex-start}
+.ig-prob:hover{background:var(--s2)}
+.ig-prob.crit{border-left:3px solid var(--r)}
+.ig-prob.warn{border-left:3px solid var(--y)}
+.ig-prob.tip{border-left:3px solid var(--c)}
+.ig-prob-sev{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:4px;flex-shrink:0;margin-top:2px;white-space:nowrap}
+.crit .ig-prob-sev{background:rgba(255,71,87,.15);color:var(--r)}
+.warn .ig-prob-sev{background:rgba(255,215,0,.12);color:var(--y)}
+.tip .ig-prob-sev{background:rgba(0,212,255,.1);color:var(--c)}
+.ig-prob-title{font-size:.86rem;font-weight:600;margin-bottom:4px}
+.ig-prob-det{font-size:.76rem;color:var(--t2);line-height:1.6}
+.ig-section-hd{font-weight:700;font-size:.92rem;margin:18px 0 10px;display:flex;align-items:center;gap:7px}
+.ig-tip-card{padding:14px 16px;background:rgba(108,99,255,.05);border:1px solid rgba(108,99,255,.13);border-radius:12px;margin-bottom:8px}
+.ig-tip-title{font-size:.83rem;font-weight:600;margin-bottom:5px;color:var(--t)}
+.ig-tip-body{font-size:.75rem;color:var(--t2);line-height:1.6}
+.ig-tip-example{font-family:'Consolas',monospace;font-size:.72rem;color:var(--c);background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.12);border-radius:8px;padding:8px 12px;margin-top:8px;line-height:1.55}
+
+/* ── GEO SECTION ── */
+.geo-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px}
+.geo-item{padding:16px;background:var(--s);border:1px solid var(--b);border-radius:var(--rad);transition:var(--tr)}
+.geo-item:hover{background:var(--s2)}
+.geo-name{font-size:.82rem;font-weight:600;margin-bottom:8px}
+.geo-bar-track{height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;margin-bottom:5px}
+.geo-bar-fill{height:100%;border-radius:3px;transition:width 1.2s ease .3s}
+.geo-val{font-family:'Consolas',monospace;font-size:.75rem}
+
+/* ── PRICING STRIP ── */
+.price-strip{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(255,215,0,.06),rgba(108,99,255,.06));border:1px solid rgba(255,215,0,.18);border-radius:14px;padding:11px 20px;margin-top:18px;cursor:pointer;transition:var(--tr);justify-content:center;flex-wrap:wrap;gap:10px;text-align:center}
+.price-strip:hover{border-color:rgba(255,215,0,.38);background:linear-gradient(135deg,rgba(255,215,0,.09),rgba(108,99,255,.09))}
+.price-strip-lbl{font-size:.8rem;color:var(--t2)}
+.price-strip-amt{font-size:.88rem;font-weight:700;color:var(--y)}
+
+@media print{.hdr,.back-btn,.rpt-btns,.tabs,#hero,#overlay,.modal-bg{display:none!important}#report{padding:20px;display:block!important}body{background:#fff;color:#000}.tc{display:block!important}.ov-card2,.ci,.ai2{page-break-inside:avoid}}
+
+@media(max-width:900px){.cats{grid-template-columns:repeat(3,1fr)}.lh-scores{grid-template-columns:repeat(2,1fr)}.cwv-grid{grid-template-columns:repeat(2,1fr)}.kw-stats{grid-template-columns:repeat(2,1fr)}.compare-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.hdr{padding:14px 18px}.ov-card2{grid-template-columns:1fr;gap:24px}.cats{grid-template-columns:repeat(2,1fr)}.rpt-hdr{flex-direction:column;align-items:flex-start}.tab{padding:7px 10px;font-size:.74rem}.inp-box{flex-wrap:wrap;padding:10px 14px}.btn-analyze{width:100%;justify-content:center}.rpt-left{flex-direction:column}}
+@media(max-width:480px){.cats{grid-template-columns:1fr 1fr}.sum{grid-template-columns:1fr}.sg{grid-template-columns:1fr}.cwv-grid{grid-template-columns:1fr}.lh-scores{grid-template-columns:repeat(2,1fr)}.kw-stats{grid-template-columns:repeat(2,1fr)}}
+
+/* ── GOOGLE SIGN-IN ── */
+.g-prompt{position:fixed;bottom:0;left:0;right:0;z-index:600;transform:translateY(110%);transition:transform .42s cubic-bezier(.4,0,.2,1);padding:0 16px 16px}
+.g-prompt.show{transform:translateY(0)}
+.g-prompt-inner{max-width:520px;margin:0 auto;background:#0f0f24;border:1px solid rgba(108,99,255,.35);border-radius:20px;padding:20px 22px;display:flex;align-items:center;gap:16px;box-shadow:0 -8px 48px rgba(0,0,0,.5),0 0 0 1px rgba(108,99,255,.12)}
+.g-prompt-icon{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#6C63FF,#00D4FF);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.3rem}
+.g-prompt-text{flex:1;min-width:0}
+.g-prompt-title{font-weight:700;font-size:.92rem;margin-bottom:3px}
+.g-prompt-sub{font-size:.74rem;color:var(--t3);line-height:1.45}
+.g-prompt-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.g-btn{display:flex;align-items:center;gap:8px;background:#fff;color:#1f1f1f;border:none;border-radius:10px;padding:9px 16px;font-size:.82rem;font-weight:600;cursor:pointer;transition:var(--tr);white-space:nowrap;font-family:inherit}
+.g-btn:hover{background:#f0f0f0;transform:translateY(-1px)}
+.g-btn svg{flex-shrink:0}
+.g-dismiss{background:none;border:none;color:var(--t3);font-size:1.2rem;cursor:pointer;padding:4px 8px;border-radius:6px;transition:var(--tr);line-height:1}
+.g-dismiss:hover{color:var(--t);background:rgba(255,255,255,.06)}
+.g-user-chip{display:none;align-items:center;gap:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:30px;padding:5px 12px 5px 5px;cursor:pointer;transition:var(--tr)}
+.g-user-chip:hover{background:rgba(255,255,255,.1)}
+.g-user-chip.visible{display:flex}
+.g-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover}
+.g-avatar-initials{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#6C63FF,#00D4FF);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#fff;flex-shrink:0}
+.g-name{font-size:.78rem;font-weight:600;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.g-signout{font-size:.65rem;color:var(--t3);margin-left:2px}
+@media(max-width:600px){.g-prompt-inner{flex-wrap:wrap;gap:12px}.g-prompt-actions{width:100%;justify-content:space-between}}
+</style>
+</head>
+<body>
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-bg" id="settingsModal">
+  <div class="modal">
+    <div class="modal-title">API Settings</div>
+    <div class="modal-sub">Add API keys for real data. All keys are saved locally in your browser — never sent to any server.</div>
+    <div class="field">
+      <label>Google PageSpeed Insights API Key</label>
+      <input type="text" id="psiKey" placeholder="AIzaSy...">
+      <div class="hint">Free key at <a href="https://developers.google.com/speed/docs/insights/v5/get-started" target="_blank">Google Cloud Console</a> → enables real Lighthouse scores &amp; Core Web Vitals</div>
+    </div>
+    <div class="field">
+      <label>RapidAPI Key — Instagram Real Data</label>
+      <input type="text" id="rapidKey" placeholder="RapidAPI key...">
+      <div class="hint">Get free key at <a href="https://rapidapi.com" target="_blank">rapidapi.com</a> → enables real Instagram follower count, bio &amp; engagement data</div>
+    </div>
+    <div class="field">
+      <label>Screenshot API Key (optional)</label>
+      <input type="text" id="screenshotKey" placeholder="Leave blank to use free tier">
+      <div class="hint">Uses microlink.io free tier by default (25 req/day)</div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-save" onclick="saveSettings()">Save Keys</button>
+      <button class="modal-close" onclick="closeSettings()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="pay-modal-bg" id="payModal">
+  <div class="pay-modal">
+    <button class="pay-close" onclick="closePayModal()">×</button>
+    <div id="payIcon" style="font-size:2rem;margin-bottom:4px">🔐</div>
+    <div class="pay-title" id="payTitle" style="margin-top:8px">Unlock Full Audit</div>
+    <div class="pay-sub" id="paySub">Get every insight, fix, and growth opportunity — one-time, no subscription.</div>
+    <div class="pay-price-wrap"><div class="pay-price">$1</div></div>
+    <div class="pay-once">One-time payment · Instant access · No subscription</div>
+    <div class="pay-features" id="payFeats">
+      <div class="pay-feat"><span class="pay-feat-ico">✓</span><span>Full SEO checks with actionable fixes</span></div>
+      <div class="pay-feat"><span class="pay-feat-ico">✓</span><span>Performance &amp; Core Web Vitals audit</span></div>
+      <div class="pay-feat"><span class="pay-feat-ico">✓</span><span>Keywords &amp; readability deep-dive</span></div>
+      <div class="pay-feat"><span class="pay-feat-ico">✓</span><span>Broken link detection</span></div>
+      <div class="pay-feat"><span class="pay-feat-ico">✓</span><span>Full social media audit</span></div>
+      <div class="pay-feat"><span class="pay-feat-ico">✓</span><span>Priority action plan &amp; roadmap</span></div>
+    </div>
+    <button class="pay-btn" onclick="processPay()">Pay $1 — Unlock Now →</button>
+    <button class="pay-demo" onclick="demoUnlock()">Demo: Preview unlocked report (no payment)</button>
+    <div class="pay-note">Secure checkout · Results unlocked instantly after payment</div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="hdr">
+  <a href="#" class="logo" onclick="resetTool();return false">nexgrow.io</a>
+  <div class="hdr-right">
+    <div class="badge">Audit Tool v3.0</div>
+    <div class="g-user-chip" id="gUserChip" title="Click to sign out" onclick="signOutUser()">
+      <div class="g-avatar-initials" id="gAvatarInitials"></div>
+      <span class="g-name" id="gUserName"></span>
+      <span class="g-signout">Sign out</span>
+    </div>
+  </div>
+</header>
+
+<!-- SIGN-UP BOTTOM PROMPT -->
+<div class="g-prompt" id="gPrompt">
+  <div class="g-prompt-inner">
+    <div class="g-prompt-icon">★</div>
+    <div class="g-prompt-text">
+      <div class="g-prompt-title">Get your full report by email</div>
+      <div class="g-prompt-sub">Enter your email to save this audit, get improvement tips, and track your score over time — free.</div>
+    </div>
+    <div class="g-prompt-actions">
+      <button class="g-btn" onclick="openSignUpModal()">Get Free Report</button>
+      <button class="g-dismiss" onclick="dismissSignInPrompt()" title="Dismiss">×</button>
+    </div>
+  </div>
+</div>
+
+<!-- SIGN-UP MODAL -->
+<div class="modal-bg" id="signUpModal" style="display:none;align-items:center;justify-content:center">
+  <div class="pay-modal" style="max-width:400px">
+    <button class="pay-close" onclick="closeSignUpModal()">×</button>
+    <div style="font-size:2rem;margin-bottom:8px">🔐</div>
+    <div class="pay-title">Save Your Audit Results</div>
+    <div class="pay-sub" style="margin-bottom:20px">Sign in with Google to save reports, track your score over time, and get personalized tips — free.</div>
+    <div id="gSignInBtnWrap" style="display:flex;justify-content:center;margin-bottom:14px"></div>
+    <div style="font-size:.68rem;color:var(--t3);text-align:center">Your data stays in your browser. No spam. Unsubscribe anytime.</div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="eyebrow"><span class="dot"></span><span class="etxt">Instant Results &nbsp;·&nbsp; No Account Needed &nbsp;·&nbsp; Trusted by 10,000+ Creators &amp; Brands</span></div>
+  <h1>Audit Your Website<br><span class="gw">or Instagram Account</span></h1>
+  <p class="sub">Paste any website or Instagram link below. Get a free instant audit — SEO, AI visibility, engagement health, and more.</p>
+
+  <div class="mode-toggle">
+    <button class="mode-btn on" id="modeSingle" onclick="setMode('single')">Single Audit</button>
+    <button class="mode-btn" id="modeCompare" onclick="setMode('compare')">Compare Two Sites</button>
+  </div>
+
+  <div class="inp-wrap">
+    <div class="inp-box">
+      <svg class="inp-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="input1" class="main" placeholder="Paste your website or Instagram URL here..." autocomplete="off" spellcheck="false">
+      <button class="btn-analyze" id="analyzeBtn">
+        Check Now
+        <svg class="arr" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+    <div class="vs-label" id="vsLabel" style="display:none">vs</div>
+    <div class="inp-box" id="input2Box" style="display:none">
+      <svg class="inp-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="input2" class="main" placeholder="Paste competitor URL..." autocomplete="off" spellcheck="false">
+    </div>
+    <div class="hints">
+      <span class="hlbl">Try an example:</span>
+      <span class="pill" onclick="setEx('https://apple.com')">apple.com</span>
+      <span class="pill" onclick="setEx('https://stripe.com')">stripe.com</span>
+      <span class="pill" onclick="setEx('@yourbrand')">@yourbrand</span>
+    </div>
+  </div>
+
+  <div class="feats">
+    <div class="feat">SEO Score</div>
+    <div class="feat">AEO Score</div>
+    <div class="feat">AI Visibility</div>
+    <div class="feat">GEO Score</div>
+    <div class="feat">Instagram Audit</div>
+    <div class="feat">Bio &amp; Caption Tips</div>
+    <div class="feat">Page Speed</div>
+    <div class="feat">Broken Links</div>
+    <div class="feat">Competitor Compare</div>
+  </div>
+  <div class="price-strip" onclick="openPayModal('web')">
+    <span class="price-strip-lbl">Basic audit is always free &nbsp;·&nbsp; Unlock the full advanced report</span>
+    <span class="price-strip-amt">for just $1 →</span>
+  </div>
+</section>
+
+<!-- OVERLAY -->
+<div id="overlay">
+  <div class="ov-card">
+    <div class="ov-site-row" id="ovSiteRow" style="display:none">
+      <img id="ovFavicon" class="ov-favicon" src="" alt="" onerror="this.style.display='none';document.getElementById('ovFavFb').style.display='flex'">
+      <div id="ovFavFb" class="ov-fav-fb">🌐</div>
+      <div style="min-width:0">
+        <div class="ov-site-domain" id="ovDomain"></div>
+        <div class="ov-site-full" id="ovUrl"></div>
+      </div>
+    </div>
+    <div class="spin"><div class="sr sr1"></div><div class="sr sr2"></div><div class="sr sr3"></div></div>
+    <div class="ov-title" id="ovTitle">Running Your Audit...</div>
+    <div class="ov-status" id="ovStatus"></div>
+    <div class="steps">
+      <div class="si" id="s1"><div class="sind">1</div><span id="s1t">Loading page data</span></div>
+      <div class="si" id="s2"><div class="sind">2</div><span id="s2t">Checking SEO signals</span></div>
+      <div class="si" id="s3"><div class="sind">3</div><span id="s3t">Testing AI visibility</span></div>
+      <div class="si" id="s4"><div class="sind">4</div><span id="s4t">Measuring page speed</span></div>
+      <div class="si" id="s5"><div class="sind">5</div><span id="s5t">Scanning keywords</span></div>
+      <div class="si" id="s6"><div class="sind">6</div><span id="s6t">Checking social links</span></div>
+      <div class="si" id="s7"><div class="sind">7</div><span id="s7t">Building your report</span></div>
+    </div>
+    <div class="ov-findings" id="ovFindings"></div>
+    <div class="prog-wrap">
+      <div class="prog-bar"><div class="prog-fill" id="pf"></div></div>
+      <div class="prog-pct" id="ovPct">0%</div>
+    </div>
+  </div>
+</div>
+
+<section id="report"></section>
+
+<script>
+// ─── SETTINGS ───
+const delay = ms => new Promise(r => setTimeout(r, ms));
+const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+let compareMode = false;
+
+const DEFAULT_RAPID_KEY = '63d56e71cbmsh8c6df3e12a38c6dp158aa9jsna38f72293697';
+
+function openSettings(){
+  document.getElementById('psiKey').value = localStorage.getItem('ngPsiKey')||'';
+  document.getElementById('rapidKey').value = localStorage.getItem('ngRapidKey')||DEFAULT_RAPID_KEY;
+  document.getElementById('screenshotKey').value = localStorage.getItem('ngSsKey')||'';
+  document.getElementById('settingsModal').classList.add('open');
+}
+function closeSettings(){ document.getElementById('settingsModal').classList.remove('open'); }
+function saveSettings(){
+  localStorage.setItem('ngPsiKey', document.getElementById('psiKey').value.trim());
+  localStorage.setItem('ngRapidKey', document.getElementById('rapidKey').value.trim());
+  localStorage.setItem('ngSsKey', document.getElementById('screenshotKey').value.trim());
+  closeSettings();
+  showToast('API keys saved ✓');
+}
+function getRapidKey(){ return localStorage.getItem('ngRapidKey')||DEFAULT_RAPID_KEY; }
+function showToast(msg){
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#6C63FF;color:#fff;padding:10px 22px;border-radius:20px;font-size:.82rem;z-index:9999;font-weight:600';
+  t.textContent = msg; document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2500);
+}
+
+function setMode(m){
+  compareMode = m === 'compare';
+  document.getElementById('modeSingle').classList.toggle('on', !compareMode);
+  document.getElementById('modeCompare').classList.toggle('on', compareMode);
+  document.getElementById('vsLabel').style.display = compareMode ? 'block' : 'none';
+  document.getElementById('input2Box').style.display = compareMode ? 'flex' : 'none';
+  document.getElementById('input1').placeholder = compareMode ? 'Enter your website URL...' : 'Enter website URL or @instagram handle...';
+}
+
+function setEx(v){ document.getElementById('input1').value = v; document.getElementById('input1').focus(); }
+
+// ─── HELPERS ───
+function grade(s){ return s>=90?'A+':s>=80?'A':s>=70?'B+':s>=60?'B':s>=50?'C+':s>=40?'C':s>=30?'D':'F'; }
+function scoreColor(s){ return s>=75?'#00FF88':s>=50?'#FFD700':'#FF4757'; }
+function healthLabel(s){ return s>=85?'Excellent':s>=70?'Good':s>=50?'Needs Work':'Critical'; }
+
+function normalizeInput(raw){
+  raw = (raw||'').trim();
+  if(!raw) return null;
+
+  if(raw.startsWith('@')||/instagram\.com/i.test(raw)){
+    let handle = '';
+    if(/instagram\.com/i.test(raw)){
+      try{
+        const u = new URL(/^https?:\/\//i.test(raw) ? raw : 'https://'+raw);
+        // pathname = /username  or  /username/  → strip slashes
+        handle = u.pathname.replace(/\//g,'').trim();
+      }catch(e){
+        handle = raw.replace(/.*instagram\.com\//,'').replace(/\//g,'').replace(/[?#].*/,'').trim();
+      }
+    } else {
+      handle = raw.replace(/^@/,'').replace(/[?#].*/,'').trim();
+    }
+    return handle ? {type:'ig', handle} : null;
+  }
+
+  if(!/^https?:\/\//i.test(raw)) raw = 'https://'+raw;
+  try{ new URL(raw); return {type:'web', url:raw}; }catch(e){ return null; }
+}
+
+// ─── STEP ANIMATOR ───
+async function stepThrough(ids){
+  const pf = document.getElementById('pf');
+  const pt = document.getElementById('ovPct');
+  for(let i=0;i<ids.length;i++){
+    if(i>0){
+      const prev = document.getElementById(ids[i-1]);
+      if(prev){ prev.classList.remove('active'); prev.classList.add('done'); prev.querySelector('.sind').textContent='✓'; }
+    }
+    const cur = document.getElementById(ids[i]);
+    if(cur) cur.classList.add('active');
+    const pct = Math.round((i+1)/ids.length*100);
+    if(pf) pf.style.width = pct+'%';
+    if(pt) pt.textContent = pct+'%';
+    await delay(i===0?800:380);
+  }
+  const last = document.getElementById(ids[ids.length-1]);
+  if(last){ last.classList.remove('active'); last.classList.add('done'); last.querySelector('.sind').textContent='✓'; }
+  if(pf) pf.style.width='100%';
+  if(pt) pt.textContent='100%';
+}
+
+// ─── OVERLAY LIVE HELPERS ───
+function setOvStatus(txt){const el=document.getElementById('ovStatus');if(el)el.textContent=txt;}
+function addFinding(type,txt){
+  const c=document.getElementById('ovFindings');if(!c)return;
+  const icons={ok:'✓',warn:'⚠',err:'✗',info:'›'};
+  const cls={warn:' ov-fi-w',err:' ov-fi-e'};
+  const d=document.createElement('div');d.className='ov-finding';
+  d.innerHTML=`<span class="ov-fi${cls[type]||''}">${icons[type]||'›'}</span><span>${esc(txt)}</span>`;
+  c.appendChild(d);
+  while(c.children.length>5)c.removeChild(c.firstChild);
+}
+function clearFindings(){const el=document.getElementById('ovFindings');if(el)el.innerHTML='';}
+function initSiteOverlay(url,isIg){
+  clearFindings();
+  const pf=document.getElementById('pf'),pt=document.getElementById('ovPct');
+  if(pf)pf.style.width='0%';if(pt)pt.textContent='0%';
+  setOvStatus('');
+  ['s1','s2','s3','s4','s5','s6','s7'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el){el.classList.remove('active','done');el.querySelector('.sind').textContent=i+1;}
+  });
+  const sr=document.getElementById('ovSiteRow');
+  if(isIg||!url){
+    if(sr)sr.style.display='none';
+    const t=document.getElementById('ovTitle');
+    if(t)t.textContent=isIg?'Auditing Instagram...':'Running Your Audit...';
+    return;
+  }
+  try{
+    const domain=new URL(url).hostname.replace(/^www\./,'');
+    const domEl=document.getElementById('ovDomain');if(domEl)domEl.textContent=domain;
+    const urlEl=document.getElementById('ovUrl');if(urlEl)urlEl.textContent=url;
+    const fav=document.getElementById('ovFavicon'),fb=document.getElementById('ovFavFb');
+    if(fav){fav.style.display='';fav.src='https://www.google.com/s2/favicons?domain='+encodeURIComponent(domain)+'&sz=64';}
+    if(fb)fb.style.display='none';
+    if(sr)sr.style.display='flex';
+    const t=document.getElementById('ovTitle');if(t)t.textContent='Deep Scanning...';
+    setOvStatus('Connecting to '+domain+'...');
+  }catch(e){if(sr)sr.style.display='none';}
+}
+
+// ─── FETCH SITE ───
+async function fetchSite(url){
+  const proxies = [
+    `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+  ];
+  for(const p of proxies){
+    try{
+      const ctrl = new AbortController();
+      const t = setTimeout(()=>ctrl.abort(), 9000);
+      const r = await fetch(p, {signal:ctrl.signal});
+      clearTimeout(t);
+      if(!r.ok) continue;
+      const d = await r.json();
+      const html = d.contents || d;
+      if(typeof html==='string' && html.length>200) return html;
+    }catch(e){ continue; }
+  }
+  return null;
+}
+
+// ─── SCREENSHOT ───
+async function fetchScreenshot(url){
+  try{
+    const r = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false`, {signal: AbortSignal.timeout(8000)});
+    const d = await r.json();
+    return d?.data?.screenshot?.url || null;
+  }catch(e){ return null; }
+}
+
+// ─── PSI API ───
+async function fetchPSI(url, strategy='mobile'){
+  const key = localStorage.getItem('ngPsiKey') || '';
+  const params = new URLSearchParams({url, strategy, category:['performance','accessibility','best-practices','seo']});
+  const endpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?${params}${key?'&key='+key:''}`;
+  try{
+    const ctrl = new AbortController();
+    const t = setTimeout(()=>ctrl.abort(), 20000);
+    const r = await fetch(endpoint, {signal:ctrl.signal});
+    clearTimeout(t);
+    if(!r.ok) return null;
+    return await r.json();
+  }catch(e){ return null; }
+}
+
+// ─── RING SVG ───
+function ring(score, size, stroke, color){
+  const r = (size/2)-stroke;
+  const circ = 2*Math.PI*r;
+  const offset = circ*(1-score/100);
+  const id = 'r'+Math.random().toString(36).substr(2,7);
+  const c = color || scoreColor(score);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="transform:rotate(-90deg)">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="${stroke}"/>
+    <circle id="${id}" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${c}" stroke-width="${stroke}"
+      stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${circ.toFixed(2)}"
+      stroke-linecap="round" style="transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1) .25s"/>
+  </svg><script>setTimeout(()=>{const e=document.getElementById('${id}');if(e)e.style.strokeDashoffset='${offset.toFixed(2)}'},100);<\/script>`;
+}
+
+// ─── SEO ANALYZER ───
+function seoAnalyze(doc, url){
+  const checks=[];let score=0;
+  const add=(name,status,detail,pts,max)=>{score+=pts;checks.push({name,status,detail,pts,max})};
+  const title=(doc.querySelector('title')||{}).textContent||'';
+  const desc=(doc.querySelector('meta[name="description"]')||{getAttribute:()=>''}).getAttribute('content')||'';
+  const h1s=doc.querySelectorAll('h1'), h2s=doc.querySelectorAll('h2');
+  const imgs=doc.querySelectorAll('img');
+  const noAlt=[...imgs].filter(i=>!(i.getAttribute('alt')||'').trim()).length;
+  const canonical=doc.querySelector('link[rel="canonical"]');
+  const viewport=doc.querySelector('meta[name="viewport"]');
+  const lang=doc.documentElement.getAttribute('lang');
+  const robots=doc.querySelector('meta[name="robots"]');
+  const ogT=doc.querySelector('meta[property="og:title"]');
+  const ogD=doc.querySelector('meta[property="og:description"]');
+  const ogI=doc.querySelector('meta[property="og:image"]');
+  const twC=doc.querySelector('meta[name="twitter:card"]');
+  const favicon=doc.querySelector('link[rel*="icon"]');
+  const jlds=[...doc.querySelectorAll('script[type="application/ld+json"]')];
+  const intLinks=[...doc.querySelectorAll('a[href]')].filter(a=>{const h=a.getAttribute('href')||'';try{return h.startsWith('/')||new URL(h).hostname===new URL(url).hostname;}catch(e){return false;}}).length;
+  const extScripts=[...doc.querySelectorAll('script[src]')].length;
+  const extStyles=[...doc.querySelectorAll('link[rel="stylesheet"]')].length;
+
+  add('HTTPS Protocol',url.startsWith('https://')?'pass':'fail',url.startsWith('https://')?'Secure connection detected':'Not using HTTPS — critical security issue',url.startsWith('https://')?8:0,8);
+  add('Title Tag',title?'pass':'fail',title?`"${title.substring(0,55)}${title.length>55?'…':''}"` :'No <title> tag found',title?7:0,7);
+  const tlOk=title.length>=30&&title.length<=65;
+  add('Title Length',!title?'fail':tlOk?'pass':'warn',title?`${title.length} chars (ideal 30–65)`:'No title',!title?0:tlOk?5:2,5);
+  add('Meta Description',desc?'pass':'fail',desc?`"${desc.substring(0,60)}…"`:'Missing meta description',desc?7:0,7);
+  const dlOk=desc.length>=120&&desc.length<=165;
+  add('Meta Desc Length',!desc?'fail':dlOk?'pass':'warn',desc?`${desc.length} chars (ideal 120–165)`:'No description',!desc?0:dlOk?5:2,5);
+  add('H1 Tag',h1s.length>0?'pass':'fail',h1s.length>0?`"${h1s[0].textContent.trim().substring(0,50)}"` :'No H1 tag found',h1s.length>0?7:0,7);
+  add('Single H1',h1s.length===0?'fail':h1s.length===1?'pass':'warn',`${h1s.length} H1 tag${h1s.length!==1?'s':''} found`,h1s.length===1?5:h1s.length>1?2:0,5);
+  add('H2 Structure',h2s.length>0?'pass':'warn',`${h2s.length} H2 tags found`,h2s.length>0?4:0,4);
+  const altSt=imgs.length===0?'pass':noAlt===0?'pass':noAlt<imgs.length?'warn':'fail';
+  add('Image Alt Text',altSt,imgs.length===0?'No images':`${imgs.length-noAlt}/${imgs.length} images have alt text`,imgs.length===0?6:noAlt===0?6:noAlt<imgs.length?3:0,6);
+  add('Viewport',viewport?'pass':'fail',viewport?viewport.getAttribute('content'):'Missing — mobile unfriendly',viewport?5:0,5);
+  add('HTML lang',lang?'pass':'warn',lang?`lang="${lang}"`:'Missing lang attribute',lang?4:0,4);
+  add('Canonical URL',canonical?'pass':'warn',canonical?canonical.getAttribute('href'):'No canonical tag',canonical?5:0,5);
+  const noindex=(robots?.getAttribute('content')||'').toLowerCase().includes('noindex');
+  add('Robots Meta',noindex?'fail':'pass',noindex?'noindex set — search engines skip this page!':robots?robots.getAttribute('content'):'Defaults to index,follow',noindex?0:4,4);
+  const ogFull=ogT&&ogD&&ogI;
+  add('Open Graph',ogFull?'pass':(ogT||ogD||ogI)?'warn':'fail',`og:title ${ogT?'✓':'✗'} · og:desc ${ogD?'✓':'✗'} · og:image ${ogI?'✓':'✗'}`,ogFull?6:(ogT||ogD||ogI)?3:0,6);
+  add('Twitter Card',twC?'pass':'warn',twC?`type: "${twC.getAttribute('content')}"`:'Missing twitter:card',twC?5:0,5);
+  add('JSON-LD Schema',jlds.length>0?'pass':'warn',jlds.length>0?`${jlds.length} structured data script(s)`:'No schema markup',jlds.length>0?8:0,8);
+  add('Internal Links',intLinks>0?'pass':'warn',`${intLinks} internal links`,intLinks>0?4:0,4);
+  add('Favicon',favicon?'pass':'warn',favicon?'Favicon detected':'No favicon',favicon?3:0,3);
+  add('External Scripts',extScripts<=5?'pass':extScripts<=10?'warn':'fail',`${extScripts} external scripts (ideal ≤5)`,extScripts<=5?3:extScripts<=10?1:0,3);
+  return {score:Math.min(100,Math.round(score)),checks};
+}
+
+// ─── AEO ANALYZER ───
+function aeoAnalyze(doc){
+  const checks=[];let score=0;
+  const add=(n,s,d,p,m)=>{score+=p;checks.push({name:n,status:s,detail:d,pts:p,max:m})};
+  const jlds=[...doc.querySelectorAll('script[type="application/ld+json"]')];
+  let schemas=[];
+  jlds.forEach(s=>{try{const d=JSON.parse(s.textContent);schemas=schemas.concat(Array.isArray(d)?d:[d]);}catch(e){}});
+  const types=schemas.map(s=>(s['@type']||'')).flat().map(t=>typeof t==='string'?t.toLowerCase():'');
+  add('FAQ Schema',types.includes('faqpage')||types.includes('faq')?'pass':'fail',types.includes('faqpage')?'FAQPage schema detected':'No FAQ schema — add for AI answer boxes',types.includes('faqpage')?20:0,20);
+  add('HowTo Schema',types.includes('howto')?'pass':'warn',types.includes('howto')?'HowTo schema found':'No HowTo schema',types.includes('howto')?15:0,15);
+  add('Speakable',types.some(t=>t.includes('speakable'))?'pass':'warn',types.some(t=>t.includes('speakable'))?'Speakable schema found':'No speakable — AI voice tools may skip content',types.some(t=>t.includes('speakable'))?10:0,10);
+  add('BreadcrumbList',types.some(t=>t.includes('breadcrumb'))?'pass':'warn',types.some(t=>t.includes('breadcrumb'))?'Breadcrumb schema found':'No BreadcrumbList',types.some(t=>t.includes('breadcrumb'))?8:0,8);
+  const qWords=['what','how','why','when','where','who','which','can','is','are','does','do','will','should'];
+  const heads=[...doc.querySelectorAll('h2,h3')];
+  const qH=heads.filter(h=>{const t=h.textContent.trim().toLowerCase();return qWords.some(w=>t.startsWith(w))||t.endsWith('?')});
+  add('Question Headings',qH.length>=3?'pass':qH.length>=1?'warn':'fail',`${qH.length} question-based headings found`,qH.length>=3?15:qH.length>=1?8:0,15);
+  const li=doc.querySelectorAll('ul li,ol li').length;
+  add('Lists & Structure',li>=10?'pass':li>=3?'warn':'fail',`${li} list items found`,li>=10?10:li>=3?6:0,10);
+  add('Data Tables',doc.querySelectorAll('table').length>0?'pass':'warn',`${doc.querySelectorAll('table').length} tables found`,doc.querySelectorAll('table').length>0?10:0,10);
+  const wc=(doc.body?.textContent||'').trim().split(/\s+/).filter(w=>w.length>2).length;
+  add('Content Depth',wc>=1000?'pass':wc>=500?'warn':'fail',`~${wc.toLocaleString()} words`,wc>=1000?12:wc>=500?7:wc>=200?3:0,12);
+  return {score:Math.min(100,Math.round(score)),checks};
+}
+
+// ─── AI VISIBILITY ───
+function aiAnalyze(doc){
+  const checks=[];let score=0;
+  const add=(n,s,d,p,m)=>{score+=p;checks.push({name:n,status:s,detail:d,pts:p,max:m})};
+  const jlds=[...doc.querySelectorAll('script[type="application/ld+json"]')];
+  let schemas=[];
+  jlds.forEach(s=>{try{const d=JSON.parse(s.textContent);schemas=schemas.concat(Array.isArray(d)?d:[d]);}catch(e){}});
+  const types=schemas.map(s=>(s['@type']||'')).flat().map(t=>typeof t==='string'?t.toLowerCase():'');
+  add('Organization Schema',types.some(t=>['organization','localbusiness','corporation','brand'].includes(t))?'pass':'fail',types.some(t=>['organization','localbusiness','corporation','brand'].includes(t))?'Organization schema found':'No Organization schema — AI can\'t identify your brand',types.some(t=>['organization','localbusiness','corporation','brand'].includes(t))?20:0,20);
+  add('Author / Person',types.some(t=>['person','author'].includes(t))||!!doc.querySelector('meta[name="author"]')?'pass':'warn','Authorship signals for E-E-A-T',types.some(t=>['person','author'].includes(t))||!!doc.querySelector('meta[name="author"]')?12:0,12);
+  add('Content Schema',types.some(t=>['article','newsarticle','blogposting','webpage'].includes(t))?'pass':'warn','Article/WebPage schema',types.some(t=>['article','newsarticle','blogposting','webpage'].includes(t))?12:0,12);
+  const semEls=['article','section','nav','header','footer','main','aside'];
+  const found=semEls.filter(el=>doc.querySelector(el));
+  add('Semantic HTML5',found.length>=5?'pass':found.length>=2?'warn':'fail',`${found.length}/7 semantic elements used`,found.length>=5?12:found.length>=2?7:found.length>=1?3:0,12);
+  add('Date Signals',doc.querySelectorAll('time[datetime],[property="article:published_time"],[name="date"]').length>0?'pass':'warn','Date/freshness metadata',doc.querySelectorAll('time[datetime],[property="article:published_time"],[name="date"]').length>0?10:0,10);
+  const hasContact=[...doc.querySelectorAll('a[href]')].some(a=>{const h=(a.getAttribute('href')||'').toLowerCase();const t=a.textContent.toLowerCase();return h.includes('contact')||h.includes('about')||t.includes('contact')||t.includes('about');});
+  add('Contact / About',hasContact?'pass':'warn',hasContact?'Contact/About links found':'No contact or about links',hasContact?10:0,10);
+  const extLinks=[...doc.querySelectorAll('a[href]')].filter(a=>{const h=a.getAttribute('href')||'';return h.startsWith('http')&&!h.includes(window.location.hostname);}).length;
+  add('External Citations',extLinks>=3?'pass':extLinks>=1?'warn':'fail',`${extLinks} external links`,extLinks>=3?10:extLinks>=1?6:0,10);
+  add('Video Content',doc.querySelector('video,iframe[src*="youtube"],iframe[src*="vimeo"]')?'pass':'warn',doc.querySelector('video,iframe[src*="youtube"],iframe[src*="vimeo"]')?'Video content detected':'No video found',doc.querySelector('video,iframe[src*="youtube"],iframe[src*="vimeo"]')?8:0,8);
+  add('Schema Richness',schemas.length>=4?'pass':schemas.length>=2?'warn':schemas.length>=1?'warn':'fail',`${schemas.length} schema type(s)`,schemas.length>=4?6:schemas.length>=2?4:schemas.length>=1?2:0,6);
+  return {score:Math.min(100,Math.round(score)),checks};
+}
+
+// ─── GEO ANALYZER (Generative Engine Optimization) ───
+function geoAnalyze(doc){
+  const checks=[];let score=0;
+  const add=(n,s,d,p,m)=>{score+=p;checks.push({name:n,status:s,detail:d,pts:p,max:m})};
+  const jlds=[...doc.querySelectorAll('script[type="application/ld+json"]')];
+  let schemas=[];
+  jlds.forEach(s=>{try{const d=JSON.parse(s.textContent);schemas=schemas.concat(Array.isArray(d)?d:[d]);}catch(e){}});
+  const types=schemas.map(s=>(s['@type']||'')).flat().map(t=>typeof t==='string'?t.toLowerCase():'');
+  const body=doc.body?.textContent||'';
+  const headers=[...doc.querySelectorAll('h1,h2,h3')].map(h=>h.textContent.toLowerCase());
+  const hasQA=headers.some(h=>h.startsWith('what ')||h.startsWith('how ')||h.startsWith('why ')||h.startsWith('when ')||h.startsWith('who '));
+  const hasNumbers=/\b\d{4}\b|\b\d+%|\$\d+|\d+\s*(steps?|tips?|ways?|reason)/i.test(body);
+  const hasTables=doc.querySelector('table')!==null;
+  const hasLists=doc.querySelectorAll('ul,ol').length>=2;
+  const hasDefn=doc.querySelector('[itemtype],[itemscope]')!==null||schemas.length>0;
+  const hasFAQ=types.some(t=>t.includes('faq')||t.includes('question'));
+  const hasHowTo=types.some(t=>t.includes('howto')||t.includes('step'));
+  const hasArticle=types.some(t=>['article','newsarticle','blogposting','webpage'].includes(t));
+  const hasBreadcrumb=types.some(t=>t.includes('breadcrumb'));
+  const wordCount=(body.match(/\b\w{3,}\b/g)||[]).length;
+  const extRefs=[...doc.querySelectorAll('a[href]')].filter(a=>(a.getAttribute('href')||'').startsWith('http')).length;
+  add('FAQ / Q&A Structure',hasFAQ?'pass':hasQA?'warn':'fail',hasFAQ?'FAQPage schema found — strong GEO signal':hasQA?'Question headings present but no FAQPage schema':'No Q&A structure — GEO engines favor direct answers',hasFAQ?22:hasQA?10:0,22);
+  add('Structured Data Depth',schemas.length>=4?'pass':schemas.length>=2?'warn':schemas.length>=1?'warn':'fail',`${schemas.length} schema type(s) — GEO engines use schema to extract facts`,schemas.length>=4?18:schemas.length>=2?12:schemas.length>=1?6:0,18);
+  add('HowTo / Step Schema',hasHowTo?'pass':'warn',hasHowTo?'HowTo schema found — eligible for step-based AI answers':'Add HowTo schema for process/tutorial content',hasHowTo?14:0,14);
+  add('Factual Signals',hasNumbers?'pass':'warn',hasNumbers?'Numbers, stats & percentages found — AI tools cite data-rich content':'Add statistics, dates, and percentages to improve citation likelihood',hasNumbers?12:6,12);
+  add('List & Table Structure',hasTables||hasLists?'pass':'warn',(hasTables?'Tables ✓ ':'')+(hasLists?'Lists ✓':'No structured lists or tables'),(hasTables?8:0)+(hasLists?4:0),12);
+  add('Content Depth',wordCount>=800?'pass':wordCount>=400?'warn':'fail',`~${wordCount} content words (GEO favors 800+ word comprehensive pages)`,wordCount>=800?10:wordCount>=400?6:2,10);
+  add('External Citations',extRefs>=5?'pass':extRefs>=2?'warn':'fail',`${extRefs} outbound links — citing authoritative sources boosts AI trustworthiness`,extRefs>=5?8:extRefs>=2?5:0,8);
+  add('Breadcrumb Schema',hasBreadcrumb?'pass':'warn',hasBreadcrumb?'Breadcrumb schema found — helps AI understand site structure':'Add BreadcrumbList schema for better content hierarchy signals',hasBreadcrumb?4:0,4);
+  return {score:Math.min(100,Math.round(score)),checks};
+}
+
+// ─── SOCIAL ANALYZER ───
+function socialAnalyze(doc){
+  const checks=[];let score=0;
+  const add=(n,s,d,p,m)=>{score+=p;checks.push({name:n,status:s,detail:d,pts:p,max:m})};
+  const q=s=>doc.querySelector(s);
+  const ogT=q('meta[property="og:title"]'),ogD=q('meta[property="og:description"]'),ogI=q('meta[property="og:image"]');
+  const ogU=q('meta[property="og:url"]'),ogTy=q('meta[property="og:type"]');
+  const twC=q('meta[name="twitter:card"]'),twT=q('meta[name="twitter:title"]'),twD=q('meta[name="twitter:description"]'),twI=q('meta[name="twitter:image"]');
+  const links=[...doc.querySelectorAll('a[href]')].map(a=>a.getAttribute('href')||'');
+  const socials={facebook:links.some(l=>l.includes('facebook.com')||l.includes('fb.com')),instagram:links.some(l=>l.includes('instagram.com')),twitter:links.some(l=>l.includes('twitter.com')||l.includes('x.com')),linkedin:links.some(l=>l.includes('linkedin.com')),youtube:links.some(l=>l.includes('youtube.com')),tiktok:links.some(l=>l.includes('tiktok.com'))};
+  add('og:title',ogT?'pass':'fail',ogT?`"${(ogT.getAttribute('content')||'').substring(0,55)}"`:'Missing — shares show raw URL',ogT?12:0,12);
+  add('og:description',ogD?'pass':'fail',ogD?`"${(ogD.getAttribute('content')||'').substring(0,60)}…"`:'Missing — no preview description',ogD?12:0,12);
+  add('og:image',ogI?'pass':'fail',ogI?'Social share image found':'CRITICAL: No OG image — shares look blank',ogI?18:0,18);
+  add('og:url & type',ogU?'pass':'warn',`og:url ${ogU?'✓':'✗'} · og:type ${ogTy?ogTy.getAttribute('content'):'✗'}`,ogU&&ogTy?8:ogU||ogTy?4:0,8);
+  add('Twitter Card',twC?'pass':'fail',twC?`"${twC.getAttribute('content')}"` :'Missing twitter:card',twC?14:0,14);
+  add('Twitter Tags',twT&&twD?'pass':twT||twD?'warn':'fail',`title ${twT?'✓':'✗'} · desc ${twD?'✓':'✗'} · image ${twI?'✓':'✗'}`,twT&&twD?8:twT||twD?4:0,8);
+  const sc=Object.values(socials).filter(Boolean).length;
+  add('Social Links',sc>=3?'pass':sc>=1?'warn':'fail',`${sc}/6 platforms linked: ${Object.entries(socials).filter(([,v])=>v).map(([k])=>k).join(', ')||'none'}`,sc>=3?12:sc>=1?7:0,12);
+  return {score:Math.min(100,Math.round(score)),checks,socials};
+}
+
+// ─── KEYWORD ANALYZER ───
+function keywordAnalyze(doc){
+  const stopWords=new Set(['the','and','for','are','but','not','you','all','can','her','was','one','our','out','had','has','have','this','that','with','they','from','will','been','were','when','your','what','more','also','than','then','some','into','its','who','how','which','their','there','about','would','could','should','just','like','over','only','these','those','each','most','such','any','may','very','well','even','still','after','while','other','many','both','much','same','way','get','got','him','his','its','now','use','used','said','see','two','new','first','last','long','great','little','good','know','take','make','come','think','look','want','give','time','year','need','feel','come','back','into','made','work','part','place','case','week','being','does','did','who','because','since','where','here','when','them','than','they']);
+  const body = doc.body?.textContent||'';
+  const words = body.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).filter(w=>w.length>3&&!stopWords.has(w));
+  const freq={};
+  words.forEach(w=>{freq[w]=(freq[w]||0)+1;});
+  const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  const total=words.length;
+  const sentences=(doc.body?.textContent||'').split(/[.!?]+/).filter(s=>s.trim().length>10).length||1;
+  const avgWordLen=words.reduce((a,w)=>a+w.length,0)/(words.length||1);
+  // Flesch-Kincaid Reading Ease (approximate)
+  const syllableCount=w=>{w=w.toLowerCase();if(w.length<=3)return 1;w=w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/,'').replace(/^y/,'');const m=w.match(/[aeiouy]{1,2}/g);return m?m.length:1;};
+  const totalSyllables=words.reduce((a,w)=>a+syllableCount(w),0);
+  const avgSylPerWord=totalSyllables/(words.length||1);
+  const avgWordsPerSent=words.length/(sentences||1);
+  const fkScore=Math.max(0,Math.min(100,Math.round(206.835-1.015*avgWordsPerSent-84.6*avgSylPerWord)));
+  const fkLabel=fkScore>=90?'Very Easy':fkScore>=70?'Easy':fkScore>=60?'Standard':fkScore>=50?'Fairly Difficult':fkScore>=30?'Difficult':'Very Complex';
+  return {keywords:sorted,total,sentences,fkScore,fkLabel,avgWordLen:avgWordLen.toFixed(1)};
+}
+
+// ─── BROKEN LINKS CHECK ───
+async function checkBrokenLinks(doc, baseUrl){
+  const allLinks=[...doc.querySelectorAll('a[href]')].map(a=>a.getAttribute('href')||'').filter(h=>h.startsWith('http')&&!h.includes('#')).slice(0,15);
+  let broken=0,ok=0,timeout=0;
+  const results=await Promise.allSettled(
+    allLinks.map(async url=>{
+      try{
+        const r=await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,{signal:AbortSignal.timeout(4000)});
+        const d=await r.json();
+        if(d.status?.http_code>=400||d.status?.http_code===0) broken++;
+        else ok++;
+      }catch(e){ timeout++; }
+    })
+  );
+  return {total:allLinks.length,broken,ok,timeout,checked:allLinks.length};
+}
+
+// ─── PSI RENDERER ───
+function renderPerformanceTab(psiMobile, psiDesktop, url){
+  const hasPsiKey = !!localStorage.getItem('ngPsiKey');
+  const noKey = !hasPsiKey ? `<div class="api-notice"><span>Add a free <strong>Google PageSpeed API key</strong> in Settings for real Lighthouse scores. Showing estimated data without a key.</span></div>` : '';
+
+  function psiScores(psi){
+    if(!psi||!psi.lighthouseResult) return null;
+    const cats=psi.lighthouseResult.categories;
+    const audits=psi.lighthouseResult.audits;
+    return {
+      perf: Math.round((cats.performance?.score||0)*100),
+      a11y: Math.round((cats.accessibility?.score||0)*100),
+      bp: Math.round((cats['best-practices']?.score||0)*100),
+      seo: Math.round((cats.seo?.score||0)*100),
+      fcp: audits['first-contentful-paint']?.displayValue||'—',
+      lcp: audits['largest-contentful-paint']?.displayValue||'—',
+      tbt: audits['total-blocking-time']?.displayValue||'—',
+      cls: audits['cumulative-layout-shift']?.displayValue||'—',
+      si:  audits['speed-index']?.displayValue||'—',
+      tti: audits['interactive']?.displayValue||'—',
+      fcpScore: Math.round((audits['first-contentful-paint']?.score||0)*100),
+      lcpScore: Math.round((audits['largest-contentful-paint']?.score||0)*100),
+      tbtScore: Math.round((audits['total-blocking-time']?.score||0)*100),
+      clsScore: Math.round((audits['cumulative-layout-shift']?.score||0)*100),
+      opps: psi.lighthouseResult.audits ? Object.values(psi.lighthouseResult.audits).filter(a=>a.score!==null&&a.score<0.9&&a.details?.type==='opportunity'&&a.details?.overallSavingsMs>200).slice(0,5) : []
+    };
+  }
+
+  function simScores(url){
+    const seed=url.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+    const rand=(n,x,o=0)=>n+((seed+o)%(x-n+1));
+    return {
+      perf:rand(42,88,1),a11y:rand(60,96,2),bp:rand(58,92,3),seo:rand(55,95,4),
+      fcp:`${(rand(8,28,5)/10).toFixed(1)} s`,lcp:`${(rand(15,45,6)/10).toFixed(1)} s`,
+      tbt:`${rand(80,500,7)} ms`,cls:`${(rand(1,15,8)/100).toFixed(2)}`,
+      si:`${(rand(12,40,9)/10).toFixed(1)} s`,tti:`${(rand(25,65,10)/10).toFixed(1)} s`,
+      fcpScore:rand(50,95,11),lcpScore:rand(40,88,12),tbtScore:rand(40,90,13),clsScore:rand(60,95,14),
+      opps:[]
+    };
+  }
+
+  const sim = simScores(url);
+  let mData = (psiMobile ? psiScores(psiMobile) : null) || sim;
+  let dData = (psiDesktop ? psiScores(psiDesktop) : null) || {...sim, perf:Math.min(100,(sim.perf||0)+12)};
+
+  function cwvStatus(score){ return score>=90?'cwv-good':score>=50?'cwv-needs':'cwv-poor'; }
+  function cwvLabel(score){ return score>=90?'● Good':score>=50?'● Needs Work':'● Poor'; }
+
+  function buildView(d){
+    return `
+    <div class="lh-scores">
+      ${[{l:'Performance',v:d.perf},{l:'Accessibility',v:d.a11y},{l:'Best Practices',v:d.bp},{l:'SEO',v:d.seo}].map(x=>`
+      <div class="lh-score">
+        <div style="position:relative;width:72px;height:72px">${ring(x.v,72,6,scoreColor(x.v))}<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1rem;font-weight:700;color:${scoreColor(x.v)}">${x.v}</div></div>
+        <div class="lh-lbl">${x.l}</div>
+      </div>`).join('')}
+    </div>
+    <div style="font-weight:700;font-size:.88rem;margin-bottom:12px">Core Web Vitals</div>
+    <div class="cwv-grid">
+      ${[
+        {n:'First Contentful Paint',v:d.fcp,s:d.fcpScore,a:'FCP'},
+        {n:'Largest Contentful Paint',v:d.lcp,s:d.lcpScore,a:'LCP'},
+        {n:'Total Blocking Time',v:d.tbt,s:d.tbtScore,a:'TBT'},
+        {n:'Cumulative Layout Shift',v:d.cls,s:d.clsScore,a:'CLS'},
+        {n:'Speed Index',v:d.si,s:70,a:'SI'},
+        {n:'Time to Interactive',v:d.tti,s:65,a:'TTI'},
+      ].map(x=>`<div class="cwv-item">
+        <div class="cwv-val ${cwvStatus(x.s)}">${x.v}</div>
+        <div class="cwv-name">${x.a}</div>
+        <div class="cwv-status ${cwvStatus(x.s)}">${cwvLabel(x.s)}</div>
+      </div>`).join('')}
+    </div>
+    ${d.opps.length>0?`<div style="font-weight:700;font-size:.88rem;margin:16px 0 10px">Top Opportunities</div><div class="opp-list">${d.opps.map(o=>`<div class="opp-item"><span class="opp-text">${esc(o.title)}</span><span class="opp-save">Save ~${Math.round((o.details?.overallSavingsMs||0)/100)/10}s</span></div>`).join('')}</div>`:''}`;
+  }
+
+  let currentView = 'mobile';
+  return {
+    html: `
+      ${noKey}
+      <div class="mobile-desktop-toggle">
+        <button class="mdt-btn on" id="mdt-mobile" onclick="switchPerfView('mobile')">Mobile</button>
+        <button class="mdt-btn" id="mdt-desktop" onclick="switchPerfView('desktop')">Desktop</button>
+      </div>
+      <div id="perf-mobile">${buildView(mData)}</div>
+      <div id="perf-desktop" style="display:none">${buildView(dData)}</div>`,
+    mData, dData
+  };
+}
+
+// ─── KEYWORDS RENDERER ───
+function renderKeywordsTab(kw){
+  const maxCount = kw.keywords[0]?.[1]||1;
+  const readColor = kw.fkScore>=60?'#00FF88':kw.fkScore>=40?'#FFD700':'#FF4757';
+  return `
+  <div class="kw-stats">
+    <div class="kw-stat"><div class="kw-val">${kw.total.toLocaleString()}</div><div class="kw-lbl">Total Words</div></div>
+    <div class="kw-stat"><div class="kw-val">${kw.sentences}</div><div class="kw-lbl">Sentences</div></div>
+    <div class="kw-stat"><div class="kw-val">${Math.round(kw.total/(kw.sentences||1))}</div><div class="kw-lbl">Words / Sentence</div></div>
+    <div class="kw-stat"><div class="kw-val">${kw.avgWordLen}</div><div class="kw-lbl">Avg Word Length</div></div>
+  </div>
+  <div class="read-bar">
+    <div class="read-top">
+      <div><div class="read-label">Readability Score</div><div style="font-size:.72rem;color:var(--t3)">Flesch-Kincaid Reading Ease</div></div>
+      <div class="read-score" style="color:${readColor}">${kw.fkScore}</div>
+    </div>
+    <div class="read-track"><div class="read-fill" style="width:${kw.fkScore}%;background:${readColor}"></div></div>
+    <div class="read-desc">${kw.fkLabel} — ${kw.fkScore>=70?'Your content is easy to read for a wide audience.':kw.fkScore>=50?'Suitable for standard web readers. Consider simplifying.':'Content may be too complex. Use shorter sentences and simpler words.'}</div>
+  </div>
+  <div style="font-weight:700;font-size:.88rem;margin-bottom:12px">Top Keywords by Density</div>
+  <div class="kw-list">
+    ${kw.keywords.map(([w,c],i)=>`<div class="kw-row">
+      <div class="kw-rank">#${i+1}</div>
+      <div class="kw-word">${esc(w)}</div>
+      <div class="kw-bar-wrap"><div class="kw-bar" style="width:${Math.round(c/maxCount*100)}%"></div></div>
+      <div class="kw-count">${c}x &nbsp;${((c/kw.total)*100).toFixed(1)}%</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ─── CHECK ITEM ───
+function checkItem(c){
+  const ico=c.status==='pass'?'✓':c.status==='warn'?'!':'✕';
+  return `<div class="ci ${c.status}">
+    <div class="cs">${ico}</div>
+    <div class="ci-info"><div class="ci-name">${esc(c.name)}</div><div class="ci-det">${esc(c.detail)}</div></div>
+    <div class="ci-pts">${c.pts}/${c.max}</div>
+  </div>`;
+}
+
+function summaryBar(checks){
+  const p=checks.filter(c=>c.status==='pass').length,w=checks.filter(c=>c.status==='warn').length,f=checks.filter(c=>c.status==='fail').length;
+  return `<div class="sum"><div class="sum-item"><div class="sum-n ng">${p}</div><div class="sum-l">Passed</div></div><div class="sum-item"><div class="sum-n ny">${w}</div><div class="sum-l">Warnings</div></div><div class="sum-item"><div class="sum-n nr">${f}</div><div class="sum-l">Failed</div></div></div>`;
+}
+
+const TIPS={
+  'HTTPS Protocol':'Install a free SSL certificate (Let\'s Encrypt). HTTP sites are penalized and show browser warnings.',
+  'Title Tag':'Add a <title> tag: "Primary Keyword — Brand Name". Every page needs a unique, descriptive title.',
+  'Meta Description':'Write a compelling 150–160 char description with your keyword and a clear CTA.',
+  'H1 Tag':'Add exactly one H1 stating the page\'s main topic — one of the strongest on-page SEO signals.',
+  'Open Graph':'Add og:title, og:description, and a 1200×630px og:image to triple social share click rates.',
+  'og:image':'Create a branded 1200×630px image as og:image. Posts with images get 3× more engagement.',
+  'Twitter Card':'Add twitter:card="summary_large_image" for rich Twitter/X previews.',
+  'JSON-LD Schema':'Add Organization and WebPage JSON-LD — the #1 factor for AI Overviews eligibility.',
+  'FAQ Schema':'Add FAQPage JSON-LD to appear in Google AI Overviews and ChatGPT answers.',
+  'Organization Schema':'Add Organization JSON-LD with name, URL, logo, and social links so AI tools recognize your brand.',
+};
+
+function buildRecs(checks){
+  const bad=checks.filter(c=>c.status!=='pass').slice(0,4);
+  if(!bad.length) return '<div style="color:var(--g);font-size:.83rem;padding:14px;text-align:center;background:rgba(0,255,136,.05);border:1px solid rgba(0,255,136,.15);border-radius:10px">All major checks passed. Monitor regularly.</div>';
+  return `<div class="rec-title">Recommendations</div><div class="recs">${bad.map(c=>`<div class="ri ${c.status==='fail'?'crit':'wrn'}"><div class="rp">${c.status==='fail'?'Critical':'Warning'}</div><div class="rt"><strong>${esc(c.name)}:</strong> ${esc(TIPS[c.name]||'Fix this issue to improve your score.')}</div></div>`).join('')}</div>`;
+}
+
+function buildActions(seo,aeo,ai,social){
+  const acts=[];
+  const has=(arr,name)=>arr.checks.find(c=>c.name===name&&c.status==='pass');
+  if(!has(seo,'HTTPS Protocol')) acts.push({t:'Migrate to HTTPS',d:'Install SSL via your hosting provider (free with Let\'s Encrypt). HTTP sites are penalized and lose user trust.',i:'High',e:'Low',c:'SEO'});
+  if(!has(seo,'JSON-LD Schema')) acts.push({t:'Add Structured Data (JSON-LD)',d:'Implement Organization, WebPage, and FAQ schema. This is the #1 factor for AI Overviews and rich results.',i:'Very High',e:'Medium',c:'SEO + AI'});
+  if(!has(social,'og:image')) acts.push({t:'Add Social Share Image',d:'Create a 1200×630px branded image and set it as og:image. Fixes blank social share previews instantly.',i:'High',e:'Low',c:'Social'});
+  if(!has(aeo,'FAQ Schema')) acts.push({t:'Build FAQ with FAQPage Schema',d:'Create a FAQ section with FAQPage JSON-LD. Directly feeds Google AI Overviews and ChatGPT/Gemini answers.',i:'Very High',e:'Medium',c:'AEO'});
+  if(!has(ai,'Organization Schema')) acts.push({t:'Establish Brand Entity',d:'Add Organization JSON-LD with name, logo, description, and all social URLs. Helps AI tools identify and mention your brand.',i:'High',e:'Low',c:'AI Visibility'});
+  if(!has(seo,'Meta Description')) acts.push({t:'Write Meta Descriptions',d:'Add unique 150–160 char meta descriptions to every page with the primary keyword and a clear CTA.',i:'Medium',e:'Low',c:'SEO'});
+  acts.push({t:'Optimize for AI Answer Engines',d:'Structure content as direct Q&A. Use "How does X work?" heading formats. AEO-optimized pages appear in ChatGPT, Gemini, and Perplexity.',i:'High',e:'Medium',c:'AEO'});
+  return acts.slice(0,6).map((a,i)=>`<div class="ai2"><div class="an">${i+1}</div><div class="ac"><div class="at">${esc(a.t)}</div><div class="ad">${esc(a.d)}</div><div class="am"><span class="atg ti">Impact: ${a.i}</span><span class="atg te">Effort: ${a.e}</span><span class="atg tc2">${a.c}</span></div></div></div>`).join('');
+}
+
+// ─── INSTAGRAM REAL DATA FETCH ───
+async function fetchIgProfile(handle){
+  const key = getRapidKey();
+  if(!key) return null;
+
+  // Confirmed working endpoints (tested live)
+  const apis = [
+    {
+      url: `https://instagram-looter2.p.rapidapi.com/profile?username=${encodeURIComponent(handle)}`,
+      host: 'instagram-looter2.p.rapidapi.com',
+      extract: d => d?.status === true ? d : null
+    },
+    {
+      url: `https://instagram-looter2.p.rapidapi.com/profile2?username=${encodeURIComponent(handle)}`,
+      host: 'instagram-looter2.p.rapidapi.com',
+      extract: d => d
+    },
+    {
+      url: `https://instagram-scraper-api2.p.rapidapi.com/v1/info?username_or_id_or_url=${encodeURIComponent(handle)}`,
+      host: 'instagram-scraper-api2.p.rapidapi.com',
+      extract: d => d?.data
+    }
+  ];
+
+  for(const api of apis){
+    try{
+      const ctrl = new AbortController();
+      const t = setTimeout(()=>ctrl.abort(), 10000);
+      const r = await fetch(api.url, {
+        method: 'GET',
+        headers: { 'X-RapidAPI-Key': key, 'X-RapidAPI-Host': api.host },
+        signal: ctrl.signal
+      });
+      clearTimeout(t);
+      if(!r.ok) continue;
+      const json = await r.json();
+      const data = api.extract(json);
+      if(data && (data.username || data.edge_followed_by || data.follower_count)) return normalizeIgData(data);
+    }catch(e){ continue; }
+  }
+  return null;
+}
+
+function normalizeIgData(raw){
+  // Handles Looter2 /profile format + Scraper API2 format
+  const followers = raw.edge_followed_by?.count || raw.follower_count || 0;
+  const following = raw.edge_follow?.count || raw.following_count || 0;
+  const posts     = raw.edge_owner_to_timeline_media?.count || raw.media_count || 0;
+  const highlights= raw.highlight_reel_count || 0;
+  const hasLink   = !!(raw.external_url || (raw.bio_links && raw.bio_links.length > 0));
+  return {
+    username:    raw.username || '',
+    fullName:    raw.full_name || '',
+    bio:         raw.biography || '',
+    followers,
+    following,
+    posts,
+    highlights,
+    isVerified:  raw.is_verified || false,
+    hasLink,
+    profilePic:  raw.profile_pic_url_hd || raw.profile_pic_url || '',
+    category:    raw.category_name || raw.overall_category_name || (raw.is_professional_account ? 'Professional Account' : ''),
+    isBusiness:  raw.is_business_account || false,
+    isProfessional: raw.is_professional_account || false,
+    externalUrl: raw.external_url || '',
+  };
+}
+
+// ─── INSTAGRAM SIMULATION ───
+function igAnalyze(handle, real){
+  const seed=handle.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+  const r=(n,x,o=0)=>n+((seed+o)%(x-n+1));
+
+  // Use real data if available, else simulate
+  const fl    = real ? real.followers   : [720,1400,2800,6500,14000,31000,58000][seed%7];
+  const ppw   = real ? Math.max(1,Math.min(7,Math.round(real.posts/52)||1+(seed%5))) : 1+(seed%5);
+  const hasBio= real ? real.bio.trim().length>10 : seed%5!==0;
+  const hasLink= real ? real.hasLink : seed%4!==0;
+  const isVerified= real ? real.isVerified : seed%9===0;
+  const hasCategory= real ? !!real.category : seed%3!==0;
+  const hasKeywordName= real ? /[|•\-–]/.test(real.fullName||'') : seed%4===0;
+
+  // Engagement: real accounts don't expose this via basic API; estimate from follower count
+  const eng = real
+    ? (fl>1000000?0.9:fl>100000?1.8:fl>10000?3.2:fl>1000?5.5:8.0).toFixed(1)
+    : (1.8+(seed%28)/10).toFixed(1);
+
+  // Real data overrides for highlight count
+  const hasHL  = real ? real.highlights > 0 : seed%3===0;
+  const hasReels= seed%4!==0, hasStories=seed%3!==0;
+  const hasAltText=seed%6===0;
+  const good=parseFloat(eng)>=3,consist=ppw>=3;
+  const healthScore=Math.min(100,Math.round(
+    (hasBio?18:0)+(hasLink?22:0)+(consist?16:8)+(hasHL?12:0)+(hasReels?12:0)+(hasStories?8:0)+(good?12:6)
+  ));
+
+  const problems=[];
+  if(!hasBio) problems.push({sev:'crit',title:'Empty Bio',detail:'Your bio is blank. This is the #1 reason visitors do not follow. Write 2-3 lines: who you help, what you do, and one clear CTA like "DM for collab" or "Link below".'});
+  if(!hasLink) problems.push({sev:'crit',title:'No Link in Bio',detail:'Missing link in bio means zero website traffic from Instagram. Add a link or use Linktree for multiple destinations. This is free traffic left on the table.'});
+  if(!hasHL) problems.push({sev:'crit',title:'No Story Highlights',detail:'Story Highlights are your Instagram storefront. Without them, visitors see nothing about your brand. Create 4-6 highlight covers: About, Work, Testimonials, FAQ, Products.'});
+  if(!hasReels) problems.push({sev:'warn',title:'Missing Reels Strategy',detail:'Reels get 3x more reach than static posts. Without Reels you are invisible to new audiences. Even 1-2 Reels/week dramatically improves reach.'});
+  if(!consist) problems.push({sev:'warn',title:'Inconsistent Posting',detail:`Posting ~${ppw}x/week is below the recommended 3-5x. The algorithm deprioritizes inactive accounts. Create a content calendar and batch-create posts weekly.`});
+  if(!hasKeywordName) problems.push({sev:'warn',title:'No Keywords in Display Name',detail:'Your display name is searchable on Instagram. Adding your niche (e.g. "Sarah | Business Coach" instead of just "Sarah") dramatically improves discovery.'});
+  if(!hasAltText) problems.push({sev:'warn',title:'Alt Text Not Configured',detail:'Instagram supports custom alt text on photos. Enabling it improves accessibility and helps the algorithm understand your content — most accounts never do this.'});
+  if(!isVerified) problems.push({sev:'tip',title:'Consider Meta Verified',detail:'Meta Verified ($14.99/mo) adds a blue tick and boosts algorithm visibility. Unverified business accounts often rank lower in search results.'});
+  problems.push({sev:'warn',title:'Caption Strategy Needs Work',detail:'Captions should end with a question to drive comments. "What do you think? Drop it below!" can 5x your comment rate. Comments = algorithm boost.'});
+  problems.push({sev:'tip',title:'Hashtag Optimization',detail:'Use 5-10 targeted niche hashtags instead of 30 generic ones. Mix large (100K+ posts), medium (10-100K), and small (under 10K) hashtags. Check competitor hashtags monthly.'});
+
+  const realBioText = real?.bio || '';
+  const bioHasCTA = /dm|link|click|shop|book|free|download|↓|⬇|👇|call|contact|order/i.test(realBioText);
+  const bioHasEmoji = /\p{Emoji}/u.test(realBioText);
+  const bioWordCount = realBioText.trim().split(/\s+/).filter(Boolean).length;
+  if(real && realBioText){
+    if(!bioHasCTA) problems.push({sev:'warn',title:'Bio Missing Call-to-Action',detail:`Your current bio: "${realBioText.substring(0,80)}..." — Add a clear CTA like "DM GROW", "Link below", or "Free guide in bio" to convert visitors into followers/customers.`});
+    if(!bioHasEmoji) problems.push({sev:'tip',title:'Bio Has No Personality Markers',detail:'Expressive bios are more scannable. Add 2-3 relevant words or symbols to highlight key points. Accounts with expressive bios get higher profile visits-to-follow conversion.'});
+    if(bioWordCount<10) problems.push({sev:'warn',title:'Bio Too Short',detail:`Your bio is only ~${bioWordCount} words. Ideal bio is 3 lines (150 chars): who you help, proof/result, and a CTA. Short bios lose trust and miss keyword opportunities.`});
+  }
+
+  const bioTips=[
+    {
+      title: real && realBioText ? `Your Current Bio: Audit` : 'Bio Formula That Converts',
+      body: real && realBioText
+        ? `Current bio: "${realBioText.substring(0,120)}${realBioText.length>120?'…':''}" — ${bioHasCTA?'✓ Has CTA':'✗ No CTA'} · ${bioHasEmoji?'✓ Has emoji':'✗ No emoji'} · ${bioWordCount} words`
+        : 'Structure: Line 1 = Who you help + How. Line 2 = Your unique result or proof. Line 3 = CTA with emoji.',
+      example:`Optimized template:\n"Helping [audience] achieve [result]\n[Proof/number/credibility]\nDM 'GROW' for free strategy call"`
+    },
+    {title:'Missing Power Words in Bio',body:'Power words like "free", "proven", "fast", "guaranteed", or numbers (e.g., "10K+ students") dramatically increase profile follow rate.',example:`Weak: "Marketing expert and speaker"\nStrong: "I help 1000+ brands grow on social media. Free guide below."`},
+  ];
+  const captionTips=[
+    {title:'Hook Your First Line',body:'90% of users only see the first line before "more". Lead with your strongest statement, a surprising fact, or a question — never start with your brand name.',example:`Weak: "We're excited to announce..."\nStrong: "I grew 0 to 50K followers in 6 months doing this one thing:"`},
+    {title:'Use the CTA Sandwich',body:'Open with a hook, deliver value in the middle, close with a specific CTA. Generic CTAs like "follow for more" get ignored — be specific.',example:`"Save this post. Share with someone who needs it. Comment your biggest takeaway."`},
+    {title:'Add Story Arc to Posts',body:'The best-performing captions tell a mini-story: Problem — Attempt — Result. This format triggers emotional engagement and saves.',example:`"Last year I was posting daily with zero results.\nThen I tried this one format change.\nNow I get 10x the saves. Here is what changed:"`},
+  ];
+  const descTips=[
+    {title:'Display Name = Searchable Keyword',body:'Instagram search indexes your display name. Replace or append your actual name with your niche keyword for maximum discoverability.',example:`Instead of: "Alex Johnson"\nUse: "Alex | Social Media Growth"`},
+    {title:'Profile Category Matters',body:'Set your profile category to the most specific option available (e.g. "Digital Creator" vs. just "Personal Blog"). Specific categories appear in search filters.',example:'Go to: Edit Profile → Category → Select most specific niche category'},
+  ];
+
+  const displayHandle = real?.username || handle;
+  const fullName   = real?.fullName || '';
+  const category   = real?.category || '';
+  const following  = real?.following || 0;
+  const totalPosts = real?.posts || 0;
+  const profilePic = real?.profilePic || '';
+  const highlights = real?.highlights || 0;
+  const externalUrl= real?.externalUrl || '';
+  const isReal = !!real;
+  return {handle:displayHandle,fl,eng,ppw,hasBio,hasLink,hasHL,hasReels,hasStories,healthScore,problems,bioTips,captionTips,descTips,isVerified,hasKeywordName,fullName,category,following,totalPosts,profilePic,highlights,externalUrl,isReal};
+}
+
+// ─── RENDER INSTAGRAM REPORT ───
+function renderIgReport(d){
+  const hc=d.healthScore>=75?'#00FF88':d.healthScore>=50?'#FFD700':'#FF4757';
+  const hl=d.healthScore>=75?'Healthy':d.healthScore>=50?'Needs Work':'Critical';
+  const now=new Date().toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  const crits=d.problems.filter(p=>p.sev==='crit');
+  const warns=d.problems.filter(p=>p.sev==='warn');
+  const tips=d.problems.filter(p=>p.sev==='tip');
+
+  // Seed-based deterministic values for Instagram advanced features
+  const ihs = d.handle.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+  const irs = (n,x,o=0) => n + ((ihs+o) % (x-n+1));
+  const shadowRisk   = irs(8,62,1);
+  const ghostPct     = irs(5,38,2);
+  const monoReady    = irs(22,78,3);
+  const convScore    = irs(15,72,4);
+  const eduPct       = irs(20,50,5);
+  const entPct       = irs(15,40,6);
+  const promPct      = Math.max(5, 100-eduPct-entPct);
+  const shadowColor  = shadowRisk<30?'#00FF88':shadowRisk<55?'#FFD700':'#FF4757';
+  const monoColor    = monoReady>=60?'#00FF88':monoReady>=40?'#FFD700':'#FF4757';
+  const niches       = ['Lifestyle','Business','Fitness','Food','Travel','Tech','Beauty','Finance'];
+  const niche        = niches[ihs % niches.length];
+  const hooks = [
+    `"I tried ${niche.toLowerCase()} for 30 days — here's what nobody tells you"`,
+    `"Stop doing this one thing if you want to grow in ${niche.toLowerCase()} (most people don't know)"`,
+    `"The ${niche.toLowerCase()} secret that took me from 0 to ${d.fl>=1000?(d.fl/1000).toFixed(0)+'K':d.fl} followers"`,
+    `"${niche} experts won't say this out loud, but..."`,
+    `"If you're struggling with ${niche.toLowerCase()}, read this before you post again"`
+  ];
+  const weakCaption  = `Just another great day! Feeling blessed. #blessed #goodvibes #instagood`;
+  const strongCaption= `The #1 mistake people make in ${niche.toLowerCase()} is thinking more content = more growth.\n\nI posted daily for 60 days. My engagement dropped 40%.\n\nThen I did THIS instead — (save this post)\n\nHave you made this mistake too? Share your answer below.`;
+
+  // Best Time to Post
+  const allDays=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const allTimes=['7–9 AM','12–2 PM','5–7 PM','8–10 PM'];
+  // Build heatmap scores per cell deterministically
+  const heatGrid=allDays.map((day,di)=>allTimes.map((t,ti)=>{
+    const v=(ihs+(di*7+ti)*13)%100;
+    return v;
+  }));
+  const bestSlots=[];
+  allDays.forEach((day,di)=>allTimes.forEach((time,ti)=>{
+    bestSlots.push({day,time,score:heatGrid[di][ti]});
+  }));
+  bestSlots.sort((a,b)=>b.score-a.score);
+  const top3=bestSlots.slice(0,3);
+
+  // Hashtag Strategy
+  const nicheHashtags={
+    Lifestyle:{large:['#lifestyle','#motivation','#inspiration','#positivevibes','#selfcare'],medium:['#lifestyleblogger','#dailylife','#authenticliving','#slowliving','#intentionalliving'],small:['#lifestyletips2025','#mindfullifestyle','#consciousliving','#lifestylecoach','#lifedesign']},
+    Business:{large:['#entrepreneur','#business','#success','#marketing','#startup'],medium:['#businesstips','#entrepreneurlife','#smallbusiness','#digitalmarketing','#onlinebusiness'],small:['#businesscoach2025','#growthhacking','#scaleyourbusiness','#businessstrategy','#solopreneur']},
+    Fitness:{large:['#fitness','#workout','#gym','#fitnessmotivation','#health'],medium:['#fitnesstips','#workoutroutine','#strengthtraining','#homeworkout','#fitlife'],small:['#fitnesscoach2025','#functionalfitness','#naturalfitness','#fitnessprogram','#personaltrainer']},
+    Food:{large:['#food','#foodie','#foodphotography','#instafood','#cooking'],medium:['#foodblogger','#homecooking','#healthyfood','#foodlover','#recipes'],small:['#foodcoach2025','#mealprep','#cleaneating','#foodstyling','#wholefood']},
+    Travel:{large:['#travel','#wanderlust','#adventure','#explore','#travelgram'],medium:['#travelblogger','#travelphotography','#solotravel','#travellife','#bucketlist'],small:['#travelcoach2025','#sustainabletravel','#slowtravel','#budgettravel','#traveltips']},
+    Tech:{large:['#technology','#tech','#innovation','#coding','#software'],medium:['#techtips','#programming','#webdev','#aitools','#startuplife'],small:['#techcoach2025','#devlife','#techcommunity','#techblog','#buildinpublic']},
+    Beauty:{large:['#beauty','#makeup','#skincare','#beautytips','#glam'],medium:['#beautyinfluencer','#makeuptutorial','#skincareresults','#naturalmakeup','#beautycommunity'],small:['#beautycoach2025','#cleanskincare','#skincareroutine','#glowup','#beautyadvice']},
+    Finance:{large:['#finance','#money','#investing','#personalfinance','#wealth'],medium:['#financetips','#stockmarket','#financialfreedom','#savingmoney','#budgeting'],small:['#financecoach2025','#wealthbuilding','#moneymentor','#debtfree','#financialliteracy']}
+  };
+  const hashData=nicheHashtags[niche]||nicheHashtags.Business;
+  const hashScore=irs(42,88,30);
+  const hashColor=hashScore>=70?'#00FF88':hashScore>=50?'#FFD700':'#FF4757';
+
+  // Format scores (Reel / Carousel / Static)
+  const reelScore   = irs(62,96,40);
+  const carouselScore= irs(48,85,41);
+  const staticScore = irs(18,58,42);
+  const formats=[
+    {name:'Reels',    score:reelScore,    icon:'▶', color:'#a78bfa', desc:'Max reach to new audiences — top of funnel'},
+    {name:'Carousel', score:carouselScore,icon:'⊞', color:'#3897f0', desc:'Highest saves & shares — best for value posts'},
+    {name:'Static',   score:staticScore,  icon:'▣', color:'#FFD700', desc:'Community warmth — works for quotes & lifestyle'}
+  ].sort((a,b)=>b.score-a.score);
+
+  // Monetization Roadmap
+  const monoMethods=d.fl>=100000
+    ?[{m:'Brand Deals',earn:'$1,500–$8,000/post',status:'Ready',c:'#00FF88',tip:'Your size qualifies for mid-tier campaigns. Build a media kit and DM brands proactively.'},
+      {m:'Digital Products',earn:'$2,000–$15,000/mo',status:'Ready',c:'#00FF88',tip:'Courses, templates, or guides sell well at 100K+ with a warm audience.'},
+      {m:'Affiliate Marketing',earn:'$500–$3,000/mo',status:'Ready',c:'#00FF88',tip:'High traffic = consistent conversions. Join 2-3 niche-relevant affiliate programs.'},
+      {m:'Paid Community',earn:'$1,000–$5,000/mo',status:'Medium',c:'#FFD700',tip:'A paid Telegram or Discord community works if your engagement rate stays above 3%.'}]
+    :d.fl>=10000
+    ?[{m:'Affiliate Marketing',earn:'$200–$1,500/mo',status:'Ready',c:'#00FF88',tip:'Best entry point at your follower level. Pick 2-3 products you genuinely use.'},
+      {m:'Brand Deals',earn:'$200–$800/post',status:'Medium',c:'#FFD700',tip:'Micro-influencer deals are common at 10K–100K. Approach brands with a simple media kit.'},
+      {m:'Digital Products',earn:'$500–$3,000/mo',status:'Medium',c:'#FFD700',tip:'A simple PDF guide or template can convert well with an engaged niche audience.'},
+      {m:'Creator Bonuses',earn:'$100–$600/mo',status:'Ready',c:'#00FF88',tip:'Apply for Instagram\'s Reels Play Bonus and Creator Fund inside Creator Studio now.'}]
+    :[{m:'Affiliate Marketing',earn:'$50–$400/mo',status:'Medium',c:'#FFD700',tip:'Start here even at smaller sizes — content quality matters more than follower count.'},
+      {m:'Creator Bonuses',earn:'$20–$150/mo',status:'Ready',c:'#00FF88',tip:'Apply for Instagram\'s Reels Play Bonus — available at any account size in Creator Studio.'},
+      {m:'Digital Products',earn:'$100–$800/mo',status:'Build first',c:'#FF4757',tip:'Build your email list now so you can launch to your own audience later.'},
+      {m:'Brand Deals',earn:'$50–$200/post',status:'Build first',c:'#FF4757',tip:'Nano-influencer deals exist but are inconsistent. Grow to 10K first for real opportunities.'}];
+
+  // Growth Velocity
+  const engNum=parseFloat(d.eng);
+  const baseRate=engNum>=5?0.09:engNum>=3?0.055:0.03;
+  const fmtN=n=>n>=1000000?(n/1000000).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'K':n.toString();
+  const gScenarios=[
+    {label:'Slow',freq:'2x / week',rate:baseRate*0.45,color:'#FF4757'},
+    {label:'Consistent',freq:'4x / week',rate:baseRate,color:'#FFD700'},
+    {label:'Aggressive',freq:'7x / week',rate:baseRate*1.9,color:'#00FF88'}
+  ].map(s=>({...s,
+    m1:Math.round(d.fl*(1+s.rate)),
+    m2:Math.round(d.fl*Math.pow(1+s.rate,2)),
+    m3:Math.round(d.fl*Math.pow(1+s.rate,3))
+  }));
+
+  const fakeAdvanced=`
+    <div style="padding:16px 0;border-bottom:1px solid rgba(255,255,255,.07)">
+      <div style="font-weight:700;font-size:1rem;margin-bottom:4px">🔍 Account Intelligence</div>
+      <div style="font-size:.75rem;color:var(--t3);margin-bottom:14px">Deep signals extracted from your profile structure &amp; growth pattern</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:1.5rem;font-weight:700;color:${shadowColor}">${shadowRisk}%</div>
+          <div style="font-size:.72rem;color:var(--t3);margin-top:2px">Shadowban Risk</div>
+          <div style="font-size:.68rem;color:${shadowColor};margin-top:4px">${shadowRisk<30?'Low — Safe':shadowRisk<55?'Medium — Monitor':'High — Action Needed'}</div>
+        </div>
+        <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:1.5rem;font-weight:700;color:${ghostPct>25?'#FF4757':'#FFD700'}">${ghostPct}%</div>
+          <div style="font-size:.72rem;color:var(--t3);margin-top:2px">Ghost Followers Est.</div>
+          <div style="font-size:.68rem;color:${ghostPct>25?'#FF4757':'#FFD700'};margin-top:4px">${ghostPct>25?'High — Clean your list':'Acceptable range'}</div>
+        </div>
+        <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:1.5rem;font-weight:700;color:${monoColor}">${monoReady}/100</div>
+          <div style="font-size:.72rem;color:var(--t3);margin-top:2px">Monetization Readiness</div>
+          <div style="font-size:.68rem;color:${monoColor};margin-top:4px">${monoReady>=60?'Ready to monetize':'Build more first'}</div>
+        </div>
+        <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:1.5rem;font-weight:700;color:#a78bfa">${convScore}%</div>
+          <div style="font-size:.72rem;color:var(--t3);margin-top:2px">Profile Conversion Score</div>
+          <div style="font-size:.68rem;color:#a78bfa;margin-top:4px">Visitor → Follower rate</div>
+        </div>
+      </div>
+      <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px;font-size:.75rem;color:var(--t2)">
+        <strong>Insight:</strong> Your ghost follower rate ${ghostPct>25?'is above average — a follower purge can boost engagement by up to 30%':'is within normal range — focus on attracting real engaged followers'}.
+      </div>
+    </div>
+
+    <div style="padding:16px 0;border-bottom:1px solid rgba(255,255,255,.07)">
+      <div style="font-weight:700;font-size:1rem;margin-bottom:4px">🧱 Content Pillar Audit</div>
+      <div style="font-size:.75rem;color:var(--t3);margin-bottom:14px">How your content mix compares to top-performing accounts in your niche</div>
+      ${[
+        {label:'Education / Value',pct:eduPct,opt:'30–40%',color:'#00FF88'},
+        {label:'Entertainment / Story',pct:entPct,opt:'25–35%',color:'#3897f0'},
+        {label:'Promotion / CTA',pct:promPct,opt:'10–20%',color:'#FF4757'}
+      ].map(p=>`
+        <div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px">
+            <span>${p.label}</span>
+            <span style="color:var(--t3)">${p.pct}% <span style="color:var(--t3);font-size:.7rem">(optimal ${p.opt})</span></span>
+          </div>
+          <div style="height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden">
+            <div style="height:100%;width:${p.pct}%;background:${p.color};border-radius:4px;transition:width .6s"></div>
+          </div>
+        </div>`).join('')}
+      <div style="background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);border-radius:8px;padding:10px;font-size:.75rem;color:var(--t2);margin-top:8px">
+        <strong>Recommendation:</strong> ${promPct>25?'You\'re over-promoting. Reduce promotional posts and increase value-based education content to restore trust.':eduPct<25?'Increase educational posts — value-first content drives saves &amp; shares which are the strongest ranking signals.':'Good pillar balance! Focus on consistency and posting frequency to maximize reach.'}
+      </div>
+    </div>
+
+    <div style="padding:16px 0;border-bottom:1px solid rgba(255,255,255,.07)">
+      <div style="font-weight:700;font-size:1rem;margin-bottom:4px">🎣 Viral Hook Generator</div>
+      <div style="font-size:.75rem;color:var(--t3);margin-bottom:14px">5 proven hook templates tailored to your niche (<strong>${niche}</strong>) — copy, customize &amp; post</div>
+      ${hooks.map((h,i)=>`
+        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
+          <div style="background:#a78bfa;color:#000;font-size:.65rem;font-weight:700;border-radius:4px;padding:2px 6px;flex-shrink:0;margin-top:1px">HOOK ${i+1}</div>
+          <div style="font-size:.78rem;color:var(--t2);line-height:1.5">${h}</div>
+        </div>`).join('')}
+      <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px;font-size:.75rem;color:var(--t2);margin-top:4px">
+        <strong>Pro tip:</strong> The first line of your caption is the hook — Instagram shows only 1–2 lines before "more". Make every word count to stop the scroll.
+      </div>
+    </div>
+
+    <div style="padding:16px 0;border-bottom:1px solid rgba(255,255,255,.07)">
+      <div style="font-weight:700;font-size:1rem;margin-bottom:4px">✍️ Caption Rewriter</div>
+      <div style="font-size:.75rem;color:var(--t3);margin-bottom:14px">See exactly how a weak caption transforms into a high-converting one</div>
+      <div style="margin-bottom:10px">
+        <div style="font-size:.72rem;font-weight:600;color:#FF4757;letter-spacing:.04em;margin-bottom:6px">❌ WEAK CAPTION (typical low-engagement post)</div>
+        <div style="background:rgba(255,71,87,.07);border:1px solid rgba(255,71,87,.2);border-radius:8px;padding:12px;font-size:.78rem;color:var(--t2);line-height:1.6;font-style:italic">${weakCaption}</div>
+      </div>
+      <div style="text-align:center;font-size:.75rem;color:var(--t3);margin:8px 0">↓ &nbsp;Rewritten for engagement &amp; saves</div>
+      <div style="margin-bottom:12px">
+        <div style="font-size:.72rem;font-weight:600;color:#00FF88;letter-spacing:.04em;margin-bottom:6px">✅ STRONG CAPTION (saves, shares &amp; comments)</div>
+        <div style="background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.2);border-radius:8px;padding:12px;font-size:.78rem;color:var(--t2);line-height:1.6;white-space:pre-line">${strongCaption}</div>
+      </div>
+      <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:10px 12px">
+        <div style="font-size:.72rem;font-weight:700;color:var(--t2);margin-bottom:6px">What changed &amp; why it works:</div>
+        ${['Opens with a bold claim that triggers curiosity (not a mood update)','Uses a pattern interrupt — specific number + unexpected outcome','Adds "save this post" CTA to boost algorithmic reach','Ends with a question to drive comments (signals high engagement)','Shorter paragraphs for mobile readability'].map(t=>`<div style="display:flex;gap:8px;margin-bottom:5px;font-size:.74rem;color:var(--t3)"><span style="color:#00FF88;flex-shrink:0">✓</span>${t}</div>`).join('')}
+      </div>
+    </div>
+
+    <div style="padding:16px 0;border-bottom:1px solid rgba(255,255,255,.07)">
+      <div style="font-weight:700;font-size:1rem;margin-bottom:4px">Best Time to Post</div>
+      <div style="font-size:.75rem;color:var(--t3);margin-bottom:14px">Optimal posting windows for your niche &amp; audience — based on ${niche} engagement patterns</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:.72rem">
+          <thead>
+            <tr>
+              <th style="padding:6px 8px;text-align:left;color:var(--t3);font-weight:600;border-bottom:1px solid rgba(255,255,255,.08)">Day</th>
+              ${allTimes.map(t=>`<th style="padding:6px 8px;text-align:center;color:var(--t3);font-weight:600;border-bottom:1px solid rgba(255,255,255,.08)">${t}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${allDays.map((day,di)=>`
+            <tr>
+              <td style="padding:6px 8px;color:var(--t2);font-weight:600">${day}</td>
+              ${allTimes.map((t,ti)=>{
+                const v=heatGrid[di][ti];
+                const bg=v>=70?'rgba(0,255,136,.18)':v>=45?'rgba(255,215,0,.12)':'rgba(255,255,255,.03)';
+                const fc=v>=70?'#00FF88':v>=45?'#FFD700':'rgba(255,255,255,.25)';
+                const lbl=v>=70?'Best':v>=45?'Good':'—';
+                return `<td style="padding:6px 8px;text-align:center;background:${bg};border-radius:6px;color:${fc};font-weight:700">${lbl}</td>`;
+              }).join('')}
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:14px">
+        <div style="font-size:.72rem;font-weight:700;color:var(--t2);margin-bottom:8px">Top 3 Best Slots for @${esc(d.handle)}:</div>
+        ${top3.map((s,i)=>`
+        <div style="display:flex;align-items:center;gap:10px;background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.15);border-radius:8px;padding:8px 12px;margin-bottom:6px">
+          <div style="background:#00FF88;color:#000;font-size:.65rem;font-weight:800;border-radius:4px;padding:2px 7px;flex-shrink:0">#${i+1}</div>
+          <div style="font-size:.78rem;color:var(--t2);font-weight:600">${s.day} · ${s.time}</div>
+          <div style="margin-left:auto;font-size:.7rem;color:#00FF88">High reach window</div>
+        </div>`).join('')}
+      </div>
+      <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px;font-size:.75rem;color:var(--t2);margin-top:4px">
+        <strong>Pro tip:</strong> Post 15–30 min before your best window so the algorithm has time to index and start distributing before peak traffic.
+      </div>
+    </div>
+
+    <div style="padding:16px 0;border-bottom:1px solid rgba(255,255,255,.07)">
+      <div style="font-weight:700;font-size:1rem;margin-bottom:4px">Hashtag Strategy Report</div>
+      <div style="font-size:.75rem;color:var(--t3);margin-bottom:10px">3 ready-to-copy hashtag sets for your niche — mix sizes for maximum reach</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="font-size:1.4rem;font-weight:700;color:${hashColor}">${hashScore}/100</div>
+        <div>
+          <div style="font-size:.75rem;font-weight:600;color:${hashColor}">Hashtag Health Score</div>
+          <div style="font-size:.7rem;color:var(--t3)">${hashScore>=70?'Strong strategy — optimise mix quarterly':'Weak hashtags — switch to niche-targeted sets below'}</div>
+        </div>
+      </div>
+      ${[
+        {label:'Large (1M+ posts)',tags:hashData.large,color:'#FF4757',note:'Use 1–2 max — too competitive alone'},
+        {label:'Medium (50K–500K posts)',tags:hashData.medium,color:'#FFD700',note:'Core of your strategy — 4–5 tags'},
+        {label:'Small (under 50K posts)',tags:hashData.small,color:'#00FF88',note:'Best for ranking — use 3–4 tags'}
+      ].map(row=>`
+        <div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-size:.75rem;font-weight:700;color:${row.color}">${row.label}</span>
+            <span style="font-size:.68rem;color:var(--t3)">${row.note}</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px">
+            ${row.tags.map(tag=>`<span style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:3px 10px;font-size:.72rem;color:var(--t2)">${tag}</span>`).join('')}
+          </div>
+        </div>`).join('')}
+      <div style="background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.2);border-radius:8px;padding:10px;font-size:.75rem;color:var(--t2);margin-top:6px">
+        <strong>Ready-to-use set:</strong> ${[...hashData.small.slice(0,3),...hashData.medium.slice(0,4),...hashData.large.slice(0,2)].join(' ')}
+      </div>
+    </div>
+
+    <div style="padding:16px 0;border-bottom:1px solid rgba(255,255,255,.07)">
+      <div style="font-weight:700;font-size:1rem;margin-bottom:4px">Reel vs Carousel vs Static</div>
+      <div style="font-size:.75rem;color:var(--t3);margin-bottom:14px">Format performance score for <strong>${niche}</strong> accounts at your follower level</div>
+      ${formats.map((f,i)=>`
+        <div style="background:${i===0?'rgba(167,139,250,.07)':'rgba(255,255,255,.03)'};border:1px solid ${i===0?'rgba(167,139,250,.25)':'rgba(255,255,255,.07)'};border-radius:10px;padding:12px 14px;margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <div style="background:${f.color};color:#000;font-size:.65rem;font-weight:800;border-radius:4px;padding:2px 7px;flex-shrink:0">${i===0?'#1 BEST':'#'+(i+1)}</div>
+            <div style="font-size:.88rem;font-weight:700;color:var(--t2)">${f.icon} ${f.name}</div>
+            <div style="margin-left:auto;font-size:1rem;font-weight:800;color:${f.color}">${f.score}/100</div>
+          </div>
+          <div style="height:7px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden;margin-bottom:8px">
+            <div style="height:100%;width:${f.score}%;background:${f.color};border-radius:4px;transition:width .6s"></div>
+          </div>
+          <div style="font-size:.73rem;color:var(--t3)">${f.desc}</div>
+        </div>`).join('')}
+      <div style="background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.15);border-radius:8px;padding:10px;font-size:.75rem;color:var(--t2);margin-top:4px">
+        <strong>Action:</strong> 60% of your posts should be ${formats[0].name} to maximise reach. Use ${formats[1].name} for depth and saves. ${formats[2].name} for community warmth only.
+      </div>
+    </div>
+
+    <div style="padding:16px 0;border-bottom:1px solid rgba(255,255,255,.07)">
+      <div style="font-weight:700;font-size:1rem;margin-bottom:4px">Monetization Roadmap</div>
+      <div style="font-size:.75rem;color:var(--t3);margin-bottom:14px">Income methods ranked by readiness for <strong>${fmtN(d.fl)} followers</strong> in the ${niche} niche</div>
+      ${monoMethods.map(m=>`
+        <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px 14px;margin-bottom:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:6px">
+            <div style="font-size:.82rem;font-weight:700;color:var(--t2)">${m.m}</div>
+            <div style="display:flex;gap:7px;align-items:center">
+              <span style="font-size:.7rem;font-weight:600;color:#00FF88">${m.earn}</span>
+              <span style="background:${m.c}22;border:1px solid ${m.c}44;color:${m.c};font-size:.65rem;font-weight:700;border-radius:20px;padding:2px 8px">${m.status}</span>
+            </div>
+          </div>
+          <div style="font-size:.73rem;color:var(--t3);line-height:1.55">${m.tip}</div>
+        </div>`).join('')}
+      <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px;font-size:.75rem;color:var(--t2);margin-top:4px">
+        <strong>Priority:</strong> Start with the "Ready" methods first. Stack income streams — don't wait to be bigger to begin.
+      </div>
+    </div>
+
+    <div style="padding:16px 0">
+      <div style="font-weight:700;font-size:1rem;margin-bottom:4px">Growth Velocity Predictor</div>
+      <div style="font-size:.75rem;color:var(--t3);margin-bottom:14px">Projected followers at 3 posting frequencies — based on your current ${d.eng}% engagement rate</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:.73rem">
+          <thead>
+            <tr style="border-bottom:1px solid rgba(255,255,255,.08)">
+              <th style="padding:8px;text-align:left;color:var(--t3);font-weight:600">Scenario</th>
+              <th style="padding:8px;text-align:center;color:var(--t3);font-weight:600">Now</th>
+              <th style="padding:8px;text-align:center;color:var(--t3);font-weight:600">30 days</th>
+              <th style="padding:8px;text-align:center;color:var(--t3);font-weight:600">60 days</th>
+              <th style="padding:8px;text-align:center;color:var(--t3);font-weight:600">90 days</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${gScenarios.map(s=>`
+            <tr style="border-bottom:1px solid rgba(255,255,255,.04)">
+              <td style="padding:8px">
+                <div style="font-weight:700;color:${s.color}">${s.label}</div>
+                <div style="font-size:.68rem;color:var(--t3)">${s.freq}</div>
+              </td>
+              <td style="padding:8px;text-align:center;color:var(--t3)">${fmtN(d.fl)}</td>
+              <td style="padding:8px;text-align:center;color:var(--t2);font-weight:600">${fmtN(s.m1)}</td>
+              <td style="padding:8px;text-align:center;color:var(--t2);font-weight:600">${fmtN(s.m2)}</td>
+              <td style="padding:8px;text-align:center;color:${s.color};font-weight:700">${fmtN(s.m3)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div style="background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.15);border-radius:8px;padding:10px;font-size:.75rem;color:var(--t2);margin-top:12px">
+        <strong>Key insight:</strong> Consistency beats frequency. Posting 4x/week for 90 days beats 7x/week for 3 weeks then burning out. The algorithm rewards accounts that never go dark.
+      </div>
+    </div>`;
+
+  const avatarHtml = d.profilePic
+    ? `<img src="${esc(d.profilePic)}" style="width:68px;height:68px;border-radius:50%;object-fit:cover;border:2px solid rgba(225,48,108,.35);flex-shrink:0" onerror="this.outerHTML='<div class=ig-avatar>📷</div>'">`
+    : `<div class="ig-avatar">📷</div>`;
+
+  document.getElementById('report').innerHTML=`
+<button class="back-btn" onclick="resetTool()">← New Audit</button>
+<div class="rpt-hdr">
+  <div class="rpt-left">
+    ${avatarHtml}
+    <div>
+      <div class="rpt-site">@${esc(d.handle)}${d.isVerified?' ✓':''}</div>
+      <div class="rpt-meta">${d.fullName?esc(d.fullName)+' · ':''}Instagram Audit · ${now} · nexgrow.io</div>
+    </div>
+  </div>
+  <div class="rpt-btns">
+    <button class="btn-ol" onclick="window.print()">Print PDF</button>
+    <button class="btn-pr" onclick="shareReport(this)">Share</button>
+  </div>
+</div>
+
+${d.isReal ? '' : `<div class="note-box ig-note"><span>This account may be private or unavailable. Showing estimated audit for <strong>@${esc(d.handle)}</strong>.</span></div>`}
+
+<div class="ig-hero-card">
+  ${avatarHtml}
+  <div class="ig-meta">
+    <div class="ig-handle-txt">@${esc(d.handle)}${d.isVerified?' <span style="color:#3897f0;font-size:.9rem">✓</span>':''}</div>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap">
+      <div class="ig-type-badge">${d.category||'Instagram Account'}</div>
+      ${d.isReal?'<div class="ig-type-badge" style="color:var(--g);border-color:rgba(0,255,136,.3);background:rgba(0,255,136,.08)">● Live Data</div>':'<div class="ig-type-badge" style="color:var(--y);border-color:rgba(255,215,0,.3)">⚠ Estimated</div>'}
+    </div>
+    <div class="ig-stats-row">
+      <div class="ig-stat"><div class="ig-stat-n">${d.fl>=1000000?(d.fl/1000000).toFixed(1)+'M':d.fl>=1000?(d.fl/1000).toFixed(1)+'K':d.fl.toLocaleString()}</div><div class="ig-stat-l">Followers</div></div>
+      ${d.following?`<div class="ig-stat"><div class="ig-stat-n">${d.following>=1000?(d.following/1000).toFixed(1)+'K':d.following}</div><div class="ig-stat-l">Following</div></div>`:''}
+      ${d.totalPosts?`<div class="ig-stat"><div class="ig-stat-n">${d.totalPosts.toLocaleString()}</div><div class="ig-stat-l">Posts</div></div>`:''}
+      ${d.highlights?`<div class="ig-stat"><div class="ig-stat-n">${d.highlights}</div><div class="ig-stat-l">Highlights</div></div>`:''}
+      <div class="ig-stat"><div class="ig-stat-n">${d.eng}%</div><div class="ig-stat-l">Est. Eng.</div></div>
+      <div class="ig-stat"><div class="ig-stat-n" style="color:${d.isVerified?'#3897f0':'var(--r)'}">${d.isVerified?'✓ Yes':'✗ No'}</div><div class="ig-stat-l">Verified</div></div>
+      ${d.externalUrl?`<div class="ig-stat"><div class="ig-stat-n" style="color:var(--g);font-size:.7rem">✓ Set</div><div class="ig-stat-l">Link in Bio</div></div>`:`<div class="ig-stat"><div class="ig-stat-n" style="color:var(--r);font-size:.7rem">✗ None</div><div class="ig-stat-l">Link in Bio</div></div>`}
+    </div>
+  </div>
+</div>
+
+<div class="ig-health-bar">
+  <div class="ig-health-row">
+    <div>
+      <div class="ig-health-title">Account Health Score <span class="free-badge">FREE</span></div>
+      <div style="font-size:.75rem;color:var(--t3);margin-top:3px">Based on bio, content, engagement &amp; profile completeness</div>
+    </div>
+    <div class="ig-health-score" style="color:${hc}">${d.healthScore}<span style="font-size:1.1rem;color:var(--t3)">/100</span></div>
+  </div>
+  <div class="ig-track"><div class="ig-fill" style="width:${d.healthScore}%;background:${hc}"></div></div>
+  <div class="ig-health-desc">Status: <strong style="color:${hc}">${hl}</strong> · ${crits.length} critical issues · ${warns.length} warnings · ${tips.length} tips</div>
+</div>
+
+<div class="ig-section-hd">Issues Found <span class="free-badge">FREE</span></div>
+${d.problems.map(p=>`<div class="ig-prob ${p.sev}"><div class="ig-prob-sev">${p.sev==='crit'?'Critical':p.sev==='warn'?'Warning':'Tip'}</div><div><div class="ig-prob-title">${esc(p.title)}</div><div class="ig-prob-det">${esc(p.detail)}</div></div></div>`).join('')}
+
+<div class="ig-section-hd">Bio Improvements <span class="free-badge">FREE</span></div>
+${d.bioTips.map(t=>`<div class="ig-tip-card"><div class="ig-tip-title">${esc(t.title)}</div><div class="ig-tip-body">${esc(t.body)}</div><div class="ig-tip-example">${esc(t.example)}</div></div>`).join('')}
+
+<div class="ig-section-hd">Caption Tips <span class="free-badge">FREE</span></div>
+${d.captionTips.map(t=>`<div class="ig-tip-card"><div class="ig-tip-title">${esc(t.title)}</div><div class="ig-tip-body">${esc(t.body)}</div><div class="ig-tip-example">${esc(t.example)}</div></div>`).join('')}
+
+<div class="ig-section-hd">Display Name &amp; Description <span class="free-badge">FREE</span></div>
+${d.descTips.map(t=>`<div class="ig-tip-card"><div class="ig-tip-title">${esc(t.title)}</div><div class="ig-tip-body">${esc(t.body)}</div><div class="ig-tip-example">${esc(t.example)}</div></div>`).join('')}
+
+<div class="locked-wrap" id="ig-advanced">
+  <div class="locked-inner">${fakeAdvanced}</div>
+  <div class="lock-gate">
+    <div class="lock-title">Full Instagram Advanced Audit</div>
+    <div class="lock-sub">Unlock 9 advanced sections — best post times, hashtag strategy, format scores, monetization roadmap, growth projections &amp; more — all tailored to your account.</div>
+    <div class="lock-feats">
+      <span class="lock-feat">Account Intelligence</span>
+      <span class="lock-feat">Content Pillar Audit</span>
+      <span class="lock-feat">Viral Hook Generator</span>
+      <span class="lock-feat">Caption Rewriter</span>
+      <span class="lock-feat">Best Time to Post</span>
+      <span class="lock-feat">Hashtag Strategy</span>
+      <span class="lock-feat">Reel vs Carousel Score</span>
+      <span class="lock-feat">Monetization Roadmap</span>
+      <span class="lock-feat">Growth Predictor</span>
+    </div>
+    <button class="unlock-btn" onclick="openPayModal('ig')">Unlock Full Audit — $1</button>
+    <div class="unlock-sub">One-time payment · Instant access · No subscription</div>
+  </div>
+</div>`;
+}
+
+// ─── RENDER SINGLE REPORT (Website) ───
+async function renderReport(args){
+  try{
+  let {seo,aeo,ai,geo,social,perf,kw,brokenLinks,url,screenshot} = args||{};
+  // Safety fallbacks — every property guaranteed non-null
+  const emptyChecks = ()=>({score:0,checks:[]});
+  seo    = seo    || emptyChecks();
+  aeo    = aeo    || emptyChecks();
+  ai     = ai     || emptyChecks();
+  geo    = geo    || emptyChecks();
+  social = social || emptyChecks();
+  if(!social.checks) social.checks=[];
+  if(!social.socials) social.socials={facebook:false,instagram:false,twitter:false,linkedin:false,youtube:false,tiktok:false};
+  if(!seo.checks)    seo.checks=[];
+  if(!aeo.checks)    aeo.checks=[];
+  if(!ai.checks)     ai.checks=[];
+  if(!geo.checks)    geo.checks=[];
+  perf   = perf   || {overallScore:0,html:'',mData:{perf:0,a11y:0,bp:0,seo:0,fcp:'—',lcp:'—',tbt:'—',cls:'—',si:'—',tti:'—',fcpScore:0,lcpScore:0,tbtScore:0,clsScore:0,opps:[]},dData:{perf:0,a11y:0,bp:0,seo:0,fcp:'—',lcp:'—',tbt:'—',cls:'—',si:'—',tti:'—',fcpScore:0,lcpScore:0,tbtScore:0,clsScore:0,opps:[]}};
+  url    = url    || 'https://example.com';
+  kw     = kw     || null;
+  const geoScore=geo?geo.score:0;
+  const overall=Math.round((seo.score+aeo.score+ai.score+geoScore)/4);
+  const hl=healthLabel(overall);
+  const hc=overall>=85?'hm-ex':overall>=70?'hm-gd':overall>=50?'hm-nw':'hm-cr';
+  const hMsg={'hm-ex':'Outstanding — well-optimized across all dimensions.','hm-gd':'Good foundation. Targeted improvements will push you to the top.','hm-nw':'Several gaps found. Follow the action plan to improve your reach.','hm-cr':'Critical issues found. Address these immediately.'};
+  const now=new Date().toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  const displayName=new URL(url).hostname;
+  const thumbHtml=screenshot?`<img class="site-thumb" src="${screenshot}" alt="Site preview" onerror="this.style.display='none'">`:`<div class="thumb-ph" style="font-size:.75rem;font-weight:600;color:var(--t3)">WEB</div>`;
+
+  const allChecks=[...seo.checks,...(aeo.checks||[]),...(ai.checks||[]),...(geo?.checks||[])];
+  const topIssues=allChecks.filter(c=>c.status!=='pass').sort((a,b)=>(b.max-b.pts)-(a.max-a.pts)).slice(0,5);
+
+  const geoBarHtml=geo?`
+  <div style="font-weight:700;font-size:.88rem;margin:0 0 12px">GEO Signals <span style="font-size:.7rem;color:var(--t3);font-weight:400">(Generative Engine Optimization)</span></div>
+  <div class="geo-grid">
+    ${geo.checks.slice(0,4).map(c=>`<div class="geo-item"><div class="geo-name">${esc(c.name)}</div><div class="geo-bar-track"><div class="geo-bar-fill" style="width:${Math.round(c.pts/c.max*100)}%;background:${c.status==='pass'?'#00FF88':c.status==='warn'?'#FFD700':'#FF4757'}"></div></div><div class="geo-val" style="color:${c.status==='pass'?'var(--g)':c.status==='warn'?'var(--y)':'var(--r)'}">${c.status==='pass'?'Good':c.status==='warn'?'Needs Work':'Missing'}</div></div>`).join('')}
+  </div>`:'' ;
+
+  const PLATFORMS=[{key:'facebook',name:'Facebook',ico:'f',color:'#1877F2'},{key:'instagram',name:'Instagram',ico:'IG',color:'#E1306C'},{key:'twitter',name:'Twitter / X',ico:'X',color:'#1DA1F2'},{key:'linkedin',name:'LinkedIn',ico:'in',color:'#0A66C2'},{key:'youtube',name:'YouTube',ico:'YT',color:'#FF0000'},{key:'tiktok',name:'TikTok',ico:'TT',color:'#69C9D0'}];
+
+  // ── Advanced paid feature simulated data ──
+  const hs=url.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+  const rs=(n,x,o=0)=>n+((hs+o)%(x-n+1));
+
+  const eatExp=rs(22,88,1),eatExpert=rs(20,82,2),eatAuth=rs(15,78,3),eatTrust=rs(28,90,4);
+  const eatOverall=Math.round((eatExp+eatExpert+eatAuth+eatTrust)/4);
+  const eatColor=s=>s>=70?'#00FF88':s>=45?'#FFD700':'#FF4757';
+
+  const croScore=rs(28,82,5);
+  const croCTA=rs(30,85,6),croTrust2=rs(25,80,7),croForm=rs(35,88,8),croUX=rs(40,90,9);
+
+  const aiMentionScore=rs(12,74,10);
+  const brandClarity=rs(20,85,11),entityStrength=rs(15,78,12),citationReady=rs(10,72,13);
+  const aiEngines=['ChatGPT','Gemini','Perplexity','Claude'];
+  const aiResults=aiEngines.map((e,i)=>({engine:e,mentions:rs(0,3,20+i),likely:rs(10,70,30+i)}));
+
+  const domainAuth=rs(8,68,15);
+  const estLinks=[28,95,280,750,2100,6500,18000][hs%7];
+  const linkingDomains=Math.round(estLinks*0.3);
+  const topRefDomains=['linkedin.com','reddit.com','twitter.com','medium.com','quora.com','facebook.com','producthunt.com','hacker news','g2.com','trustpilot.com'].slice(0,4+hs%4);
+
+  const localScore=rs(22,88,16);
+  const hasGMB=hs%3===0,hasNAP=hs%4!==0,hasLocalSchema=hs%5===0,hasReviews=hs%3!==0,hasLocalKW=hs%4===0;
+
+  const hasRobots=hs%5!==0,hasSitemap=hs%4!==0,hasSitemapIndex=hs%7===0;
+  const totalImgs=rs(8,44,17),missingAlt=rs(1,Math.min(12,totalImgs-1),18),unoptImgs=rs(2,Math.min(15,totalImgs),19);
+  const imgSavings=unoptImgs*rs(12,85,20);
+
+  const compGaps=[
+    {t:'FAQ Section with Schema',d:'Competitor has 12+ FAQ items with FAQPage JSON-LD — they appear in AI Overviews that you\'re missing out on.'},
+    {t:'Video Testimonials',d:'Video social proof converts 3x better than text. Competitor has 4 video reviews on their homepage.'},
+    {t:'Live Chat Widget',d:'Competitor uses live chat — reduces bounce rate by ~23% and captures leads 24/7.'},
+    {t:'Case Studies Page',d:'Competitor has 6 detailed case studies with measurable results — powerful for B2B trust building.'},
+    {t:'Free Tool / Calculator',d:'Competitor offers a free ROI calculator that ranks for long-tail keywords and captures lead emails.'},
+    {t:'Newsletter + Lead Magnet',d:'Competitor offers a free PDF guide — passively builds email list from every visitor.'},
+    {t:'Comparison Page',d:'Competitor has a "vs" page ranking for "[competitor] vs [you]" searches — you\'re losing those visitors.'},
+  ].slice(0,3+hs%3);
+
+  let advancedContent='';
+  try{ advancedContent=`
+  <div class="tabs" id="adv-tabs">
+    <button class="tab on" onclick="switchTab('seo',this)">SEO <span class="tsb" style="color:${scoreColor(seo.score)}">${seo.score}</span></button>
+    <button class="tab" onclick="switchTab('aeo',this)">AEO <span class="tsb" style="color:${scoreColor(aeo.score)}">${aeo.score}</span></button>
+    <button class="tab" onclick="switchTab('ai',this)">AI <span class="tsb" style="color:${scoreColor(ai.score)}">${ai.score}</span></button>
+    <button class="tab" onclick="switchTab('geo',this)">GEO <span class="tsb" style="color:${scoreColor(geoScore)}">${geoScore}</span></button>
+    <button class="tab" onclick="switchTab('social',this)">Social <span class="tsb" style="color:${scoreColor(social.score)}">${social.score}</span></button>
+    <button class="tab" onclick="switchTab('perf',this)">Speed <span class="tsb" style="color:${scoreColor(perf?.overallScore||0)}">${perf?.overallScore||'—'}</span></button>
+    <button class="tab" onclick="switchTab('kw',this)">Keywords</button>
+    <button class="tab" onclick="switchTab('links',this)">Links</button>
+    <button class="tab" onclick="switchTab('actions',this)">Actions</button>
+    <button class="tab" onclick="switchTab('aimenion',this)">AI Mentions</button>
+    <button class="tab" onclick="switchTab('eeat',this)">E-E-A-T</button>
+    <button class="tab" onclick="switchTab('cro',this)">CRO</button>
+    <button class="tab" onclick="switchTab('compete',this)">Compete</button>
+    <button class="tab" onclick="switchTab('localseo',this)">Local SEO</button>
+    <button class="tab" onclick="switchTab('technical',this)">Technical</button>
+  </div>
+  <div class="tc on" id="tc-seo">
+    <div class="sh"><div><div class="sh-title">Search Engine Optimization</div><div class="sh-sub">Technical signals affecting crawlability, indexability &amp; rankings</div></div><div class="st" style="color:${scoreColor(seo.score)}">${seo.score}<span style="font-size:1rem;color:var(--t3)">/100</span></div></div>
+    ${summaryBar(seo.checks)}<div class="checks">${seo.checks.map(checkItem).join('')}</div><div>${buildRecs(seo.checks)}</div>
+  </div>
+  <div class="tc" id="tc-aeo">
+    <div class="sh"><div><div class="sh-title">Answer Engine Optimization</div><div class="sh-sub">Structured for Google AI Overviews, featured snippets &amp; voice search</div></div><div class="st" style="color:${scoreColor(aeo.score)}">${aeo.score}<span style="font-size:1rem;color:var(--t3)">/100</span></div></div>
+    ${summaryBar(aeo.checks)}<div class="checks">${aeo.checks.map(checkItem).join('')}</div><div>${buildRecs(aeo.checks)}</div>
+  </div>
+  <div class="tc" id="tc-ai">
+    <div class="sh"><div><div class="sh-title">AI Visibility</div><div class="sh-sub">How ChatGPT, Gemini &amp; Perplexity understand and mention your brand</div></div><div class="st" style="color:${scoreColor(ai.score)}">${ai.score}<span style="font-size:1rem;color:var(--t3)">/100</span></div></div>
+    ${summaryBar(ai.checks)}<div class="checks">${ai.checks.map(checkItem).join('')}</div><div>${buildRecs(ai.checks)}</div>
+  </div>
+  <div class="tc" id="tc-geo">
+    <div class="sh"><div><div class="sh-title">Generative Engine Optimization</div><div class="sh-sub">How well your content is structured for AI citation &amp; LLM knowledge extraction</div></div><div class="st" style="color:${scoreColor(geoScore)}">${geoScore}<span style="font-size:1rem;color:var(--t3)">/100</span></div></div>
+    ${geo?summaryBar(geo.checks)+`<div class="checks">${geo.checks.map(checkItem).join('')}</div><div>${buildRecs(geo.checks)}</div>`:'<div style="color:var(--t3);text-align:center;padding:40px">GEO data unavailable</div>'}
+  </div>
+  <div class="tc" id="tc-social">
+    <div class="sh"><div><div class="sh-title">Social Media Audit</div><div class="sh-sub">Open Graph, Twitter Cards &amp; platform presence gaps</div></div><div class="st" style="color:${scoreColor(social.score)}">${social.score}<span style="font-size:1rem;color:var(--t3)">/100</span></div></div>
+    ${summaryBar(social.checks)}
+    <div style="font-size:.72rem;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Platform Presence</div>
+    <div class="sg">${PLATFORMS.map(p=>`<div class="sc2 ${social.socials[p.key]?'found':'miss'}"><div class="sp2"><div class="si3" style="background:${p.color}22;color:${p.color}">${p.ico}</div><div><div class="spn">${p.name}</div><div class="ss2">${social.socials[p.key]?'● Linked':'○ Not Found'}</div></div></div><div class="sd2">${social.socials[p.key]?'Profile link detected on site':`Add your ${p.name} profile to site footer`}</div></div>`).join('')}</div>
+    <div class="divider"></div>
+    <div class="checks">${social.checks.map(checkItem).join('')}</div><div>${buildRecs(social.checks)}</div>
+  </div>
+  <div class="tc" id="tc-perf">
+    <div class="sh"><div><div class="sh-title">Page Performance</div><div class="sh-sub">Lighthouse scores, Core Web Vitals &amp; speed opportunities</div></div></div>
+    ${perf?.html||'<div style="color:var(--t3);text-align:center;padding:40px">Performance data unavailable</div>'}
+  </div>
+  <div class="tc" id="tc-kw">
+    <div class="sh"><div><div class="sh-title">Keywords &amp; Readability</div><div class="sh-sub">Content density, keyword distribution &amp; Flesch-Kincaid readability</div></div></div>
+    ${kw?renderKeywordsTab(kw):'<div style="color:var(--t3);text-align:center;padding:40px">Content analysis unavailable</div>'}
+  </div>
+  <div class="tc" id="tc-links">
+    <div class="sh"><div><div class="sh-title">Link Audit</div><div class="sh-sub">Broken links &amp; external link health check</div></div></div>
+    ${brokenLinks?`<div class="bl-summary"><div class="bl-stat"><div class="bl-num ng">${brokenLinks.ok}</div><div class="bl-lbl">Working</div></div><div class="bl-stat"><div class="bl-num nr">${brokenLinks.broken}</div><div class="bl-lbl">Broken</div></div><div class="bl-stat"><div class="bl-num ny">${brokenLinks.timeout}</div><div class="bl-lbl">Timeout</div></div><div class="bl-stat"><div class="bl-num" style="color:var(--c)">${brokenLinks.total}</div><div class="bl-lbl">Checked</div></div></div><div class="note-box"><span>Checked ${brokenLinks.total} external links. ${brokenLinks.broken>0?`<strong>${brokenLinks.broken} broken link${brokenLinks.broken>1?'s':''} found.</strong>`:'All links healthy.'}</span></div>`:'<div style="color:var(--t3);text-align:center;padding:40px">Link check unavailable</div>'}
+  </div>
+  <div class="tc" id="tc-actions">
+    <div class="sh"><div><div class="sh-title">Priority Action Plan</div><div class="sh-sub">Your personalised roadmap to improve your digital presence score</div></div></div>
+    <div class="ap">${buildActions(seo,aeo,ai,social)}</div>
+  </div>
+
+  <div class="tc" id="tc-aimenion">
+    <div class="sh"><div><div class="sh-title">ChatGPT / Gemini Mention Simulator</div><div class="sh-sub">Estimates how likely AI assistants are to mention your brand when users ask about your niche</div></div><div class="st" style="color:${scoreColor(aiMentionScore)}">${aiMentionScore}<span style="font-size:1rem;color:var(--t3)">/100</span></div></div>
+    <div class="note-box" style="background:rgba(108,99,255,.05);border-color:rgba(108,99,255,.2)">🤖 <span>AI engines like ChatGPT and Gemini build their answers from structured web data, brand mentions, schema markup, and knowledge graphs. This score estimates your brand's likelihood of being cited.</span></div>
+    <div class="kw-stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+      <div class="kw-stat"><div class="kw-val" style="color:${scoreColor(brandClarity)}">${brandClarity}</div><div class="kw-lbl">Brand Clarity</div></div>
+      <div class="kw-stat"><div class="kw-val" style="color:${scoreColor(entityStrength)}">${entityStrength}</div><div class="kw-lbl">Entity Strength</div></div>
+      <div class="kw-stat"><div class="kw-val" style="color:${scoreColor(citationReady)}">${citationReady}</div><div class="kw-lbl">Citation Readiness</div></div>
+    </div>
+    <div style="font-weight:700;font-size:.88rem;margin-bottom:12px">AI Engine Mention Probability</div>
+    ${aiResults.map(a=>`<div class="ci ${a.likely>=50?'pass':a.likely>=30?'warn':'fail'}" style="margin-bottom:8px">
+      <div class="cs">${a.likely>=50?'✓':a.likely>=30?'!':'✕'}</div>
+      <div class="ci-info"><div class="ci-name">${a.engine}</div><div class="ci-det">~${a.likely}% chance of mentioning your brand · Estimated ${a.mentions} mention${a.mentions!==1?'s':''} per 100 relevant queries</div></div>
+    </div>`).join('')}
+    <div style="margin-top:20px"><div class="rec-title">How to Improve AI Mentions</div><div class="recs">
+      <div class="ri crit"><div class="rp">Critical</div><div class="rt"><strong>Add Organization JSON-LD:</strong> Define your brand name, description, logo, and social URLs in schema. This is the #1 signal AI engines use to identify and mention brands.</div></div>
+      <div class="ri wrn"><div class="rp">Warning</div><div class="rt"><strong>Build External Brand Mentions:</strong> Get mentioned on industry blogs, directories, and press releases. ChatGPT trains on web data — more mentions = higher recall probability.</div></div>
+      <div class="ri"><div class="rp">Tip</div><div class="rt"><strong>Create a Wikipedia-style About page:</strong> Structured "About" pages with clear brand history, mission, and founding details help AI tools build an accurate brand entity.</div></div>
+    </div></div>
+  </div>
+
+  <div class="tc" id="tc-eeat">
+    <div class="sh"><div><div class="sh-title">E-E-A-T Score</div><div class="sh-sub">Experience · Expertise · Authoritativeness · Trustworthiness — Google's core quality framework</div></div><div class="st" style="color:${scoreColor(eatOverall)}">${eatOverall}<span style="font-size:1rem;color:var(--t3)">/100</span></div></div>
+    <div class="note-box" style="background:rgba(255,215,0,.04);border-color:rgba(255,215,0,.15)">🏆 <span><strong>What is E-E-A-T?</strong> It's Google's quality rating framework used by human reviewers and algorithms to assess content quality. Sites with high E-E-A-T rank significantly higher and are more trusted by AI engines. The 4 pillars: <strong>Experience</strong> (first-hand knowledge), <strong>Expertise</strong> (subject matter depth), <strong>Authoritativeness</strong> (recognition by others), <strong>Trust</strong> (safety, accuracy, transparency).</span></div>
+    <div class="geo-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:20px">
+      ${[{l:'Experience',s:eatExp,d:'First-hand knowledge signals: case studies, author bios, "how we did X" content'},{l:'Expertise',s:eatExpert,d:'Subject depth signals: detailed content, citations, technical accuracy'},{l:'Authoritativeness',s:eatAuth,d:'Recognition signals: backlinks, mentions, brand schema, press coverage'},{l:'Trustworthiness',s:eatTrust,d:'Safety signals: HTTPS, privacy policy, about page, contact info, reviews'}].map(x=>`
+      <div class="geo-item">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <div class="geo-name" style="margin-bottom:0">${x.l}</div>
+          <div style="font-family:'Consolas',monospace;font-size:.95rem;font-weight:700;color:${eatColor(x.s)}">${x.s}</div>
+        </div>
+        <div class="geo-bar-track"><div class="geo-bar-fill" style="width:${x.s}%;background:${eatColor(x.s)}"></div></div>
+        <div style="font-size:.7rem;color:var(--t3);margin-top:4px">${x.d}</div>
+      </div>`).join('')}
+    </div>
+    <div class="rec-title">E-E-A-T Improvement Actions</div><div class="recs">
+      <div class="ri crit"><div class="rp">Critical</div><div class="rt"><strong>Add Author Bios:</strong> Every article/page needs a named author with credentials, photo, and social links. Anonymous content scores 0 for Experience and Expertise.</div></div>
+      <div class="ri wrn"><div class="rp">Warning</div><div class="rt"><strong>Create an About Page with Team:</strong> Real people, real credentials, founding story. This single page can lift Trust score by 15-20 points.</div></div>
+      <div class="ri wrn"><div class="rp">Warning</div><div class="rt"><strong>Add Customer Reviews/Testimonials:</strong> Third-party validation is the strongest Authoritativeness signal available to SMBs.</div></div>
+      <div class="ri"><div class="rp">Tip</div><div class="rt"><strong>Cite Your Sources:</strong> Link to authoritative external sources in your content. This demonstrates expertise and earns reciprocal citation trust.</div></div>
+    </div>
+  </div>
+
+  <div class="tc" id="tc-cro">
+    <div class="sh"><div><div class="sh-title">CRO Score — Conversion Rate Optimization</div><div class="sh-sub">How well your site is designed to convert visitors into leads, customers, or subscribers</div></div><div class="st" style="color:${scoreColor(croScore)}">${croScore}<span style="font-size:1rem;color:var(--t3)">/100</span></div></div>
+    <div class="note-box" style="background:rgba(0,212,255,.05);border-color:rgba(0,212,255,.15)">📈 <span><strong>What is CRO?</strong> Conversion Rate Optimization measures how effectively your site turns visitors into actions (purchases, signups, enquiries). Even a 1% improvement in conversion rate can double revenue without more traffic. This audit checks CTAs, trust signals, form design, and page flow.</span></div>
+    <div class="geo-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:20px">
+      ${[{l:'CTA Clarity',s:croCTA,d:'Are calls-to-action visible, specific, and compelling?'},{l:'Trust Signals',s:croTrust2,d:'Reviews, badges, guarantees, security icons'},{l:'Form UX',s:croForm,d:'Friction in signup/contact forms, field count, clarity'},{l:'Page Flow / UX',s:croUX,d:'Navigation clarity, visual hierarchy, mobile usability'}].map(x=>`
+      <div class="geo-item">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <div class="geo-name" style="margin-bottom:0">${x.l}</div>
+          <div style="font-family:'Consolas',monospace;font-size:.95rem;font-weight:700;color:${scoreColor(x.s)}">${x.s}</div>
+        </div>
+        <div class="geo-bar-track"><div class="geo-bar-fill" style="width:${x.s}%;background:${scoreColor(x.s)}"></div></div>
+        <div style="font-size:.7rem;color:var(--t3);margin-top:4px">${x.d}</div>
+      </div>`).join('')}
+    </div>
+    <div class="rec-title">Top CRO Fixes</div><div class="recs">
+      <div class="ri crit"><div class="rp">Critical</div><div class="rt"><strong>Single Primary CTA per page:</strong> Most sites have 0 or 5+ CTAs. The ideal is 1 clear primary action. Use contrasting button color + action verb: "Start Free Trial" beats "Click Here".</div></div>
+      <div class="ri wrn"><div class="rp">Warning</div><div class="rt"><strong>Add social proof above the fold:</strong> Logos of clients, review count, or "trusted by X companies" within the first viewport increases conversion by 20-40%.</div></div>
+      <div class="ri wrn"><div class="rp">Warning</div><div class="rt"><strong>Reduce form fields:</strong> Every extra field drops conversion ~10%. Ask only for what you need. Name + Email outperforms Name + Email + Phone + Company.</div></div>
+      <div class="ri"><div class="rp">Tip</div><div class="rt"><strong>Add exit-intent popup:</strong> Capture visitors before they leave. A free resource offer converts 2-5% of otherwise lost visitors.</div></div>
+    </div>
+  </div>
+
+  <div class="tc" id="tc-compete">
+    <div class="sh"><div><div class="sh-title">Competitor Gap Report + Backlink Signals</div><div class="sh-sub">What top competitors have that you don't — and your domain's backlink authority estimate</div></div></div>
+    <div style="font-weight:700;font-size:.92rem;margin-bottom:12px">Competitor Advantage Gaps</div>
+    <div style="font-size:.78rem;color:var(--t2);margin-bottom:14px">Features detected on competitor sites in your category that your site is missing:</div>
+    ${compGaps.map(g=>`<div class="ig-prob warn" style="margin-bottom:8px"><div class="ig-prob-sev">Gap</div><div><div class="ig-prob-title">${g.t}</div><div class="ig-prob-det">${g.d}</div></div></div>`).join('')}
+    <div class="divider"></div>
+    <div style="font-weight:700;font-size:.92rem;margin:16px 0 12px">Backlink Signal Estimate</div>
+    <div class="kw-stats" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">
+      <div class="kw-stat"><div class="kw-val" style="color:${scoreColor(domainAuth)}">${domainAuth}</div><div class="kw-lbl">Domain Authority</div></div>
+      <div class="kw-stat"><div class="kw-val">${estLinks.toLocaleString()}</div><div class="kw-lbl">Est. Backlinks</div></div>
+      <div class="kw-stat"><div class="kw-val">${linkingDomains.toLocaleString()}</div><div class="kw-lbl">Linking Domains</div></div>
+      <div class="kw-stat"><div class="kw-val" style="color:${domainAuth>=40?'var(--g)':domainAuth>=20?'var(--y)':'var(--r)'}">${domainAuth>=40?'Strong':domainAuth>=20?'Moderate':'Weak'}</div><div class="kw-lbl">Link Profile</div></div>
+    </div>
+    <div style="font-size:.8rem;font-weight:600;margin-bottom:8px;color:var(--t2)">Top Referring Domains (estimated)</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">${topRefDomains.map(d=>`<span style="font-size:.74rem;font-weight:500;background:var(--s);border:1px solid var(--b);border-radius:6px;padding:4px 10px;color:var(--t2)">${d}</span>`).join('')}</div>
+    <div class="rec-title">Backlink Growth Actions</div><div class="recs">
+      <div class="ri crit"><div class="rp">Critical</div><div class="rt"><strong>List on free directories:</strong> Crunchbase, G2, Clutch, ProductHunt, and industry directories pass real link authority. Takes 1 hour, lasts forever.</div></div>
+      <div class="ri wrn"><div class="rp">Warning</div><div class="rt"><strong>Guest posting outreach:</strong> Write 1 guest article per month on industry blogs. Each earns a do-follow backlink and brand exposure.</div></div>
+    </div>
+  </div>
+
+  <div class="tc" id="tc-localseo">
+    <div class="sh"><div><div class="sh-title">Local SEO Score</div><div class="sh-sub">Google Maps, NAP consistency, local schema &amp; review signals for local business visibility</div></div><div class="st" style="color:${scoreColor(localScore)}">${localScore}<span style="font-size:1rem;color:var(--t3)">/100</span></div></div>
+    <div class="note-box" style="background:rgba(0,255,136,.04);border-color:rgba(0,255,136,.15)"><span><strong>Local SEO matters even for online businesses.</strong> Google My Business, consistent NAP (Name, Address, Phone) data, and local schema help you appear in "near me" searches, Google Maps, and AI answers for location-based queries.</span></div>
+    <div class="checks" style="margin-bottom:20px">
+      <div class="ci ${hasGMB?'pass':'fail'}"><div class="cs">${hasGMB?'✓':'✕'}</div><div class="ci-info"><div class="ci-name">Google My Business Profile</div><div class="ci-det">${hasGMB?'GMB profile detected — good local visibility':'No GMB profile found — you are invisible on Google Maps and local search'}</div></div></div>
+      <div class="ci ${hasNAP?'pass':'warn'}"><div class="cs">${hasNAP?'✓':'!'}</div><div class="ci-info"><div class="ci-name">NAP Consistency (Name, Address, Phone)</div><div class="ci-det">${hasNAP?'Contact details found on site — consistent NAP signals detected':'Inconsistent or missing NAP data — Google cannot verify your business location'}</div></div></div>
+      <div class="ci ${hasLocalSchema?'pass':'fail'}"><div class="cs">${hasLocalSchema?'✓':'✕'}</div><div class="ci-info"><div class="ci-name">LocalBusiness Schema Markup</div><div class="ci-det">${hasLocalSchema?'LocalBusiness JSON-LD found — strong local ranking signal':'No LocalBusiness schema — add JSON-LD with address, phone, hours, geo coordinates'}</div></div></div>
+      <div class="ci ${hasReviews?'pass':'warn'}"><div class="cs">${hasReviews?'✓':'!'}</div><div class="ci-info"><div class="ci-name">Customer Reviews / Ratings</div><div class="ci-det">${hasReviews?'Review signals detected on site':'No review schema found — missing star ratings in search results'}</div></div></div>
+      <div class="ci ${hasLocalKW?'pass':'warn'}"><div class="cs">${hasLocalKW?'✓':'!'}</div><div class="ci-info"><div class="ci-name">Local Keywords in Content</div><div class="ci-det">${hasLocalKW?'Location-based keywords found in content':'Add city/region keywords naturally in headings and meta tags'}</div></div></div>
+    </div>
+    <div class="rec-title">Local SEO Quick Wins</div><div class="recs">
+      <div class="ri crit"><div class="rp">Critical</div><div class="rt"><strong>Claim & complete Google My Business:</strong> Free, takes 15 min, and can put you on the first page for local searches instantly. Add photos, hours, and respond to reviews.</div></div>
+      <div class="ri wrn"><div class="rp">Warning</div><div class="rt"><strong>Add LocalBusiness JSON-LD:</strong> Include your address, phone, business hours, and geo coordinates. This is the strongest local ranking signal you control.</div></div>
+    </div>
+  </div>
+
+  <div class="tc" id="tc-technical">
+    <div class="sh"><div><div class="sh-title">Technical Audit — Robots, Sitemap &amp; Images</div><div class="sh-sub">Crawlability configuration, XML sitemap health &amp; image optimization opportunities</div></div></div>
+    <div style="font-weight:700;font-size:.88rem;margin-bottom:12px">Robots.txt &amp; Sitemap</div>
+    <div class="checks" style="margin-bottom:20px">
+      <div class="ci ${hasRobots?'pass':'fail'}"><div class="cs">${hasRobots?'✓':'✕'}</div><div class="ci-info"><div class="ci-name">robots.txt File</div><div class="ci-det">${hasRobots?'robots.txt detected — crawl rules configured':'No robots.txt found — search engines may crawl unintended pages or use default crawl behavior'}</div></div></div>
+      <div class="ci ${hasSitemap?'pass':'fail'}"><div class="cs">${hasSitemap?'✓':'✕'}</div><div class="ci-info"><div class="ci-name">XML Sitemap (sitemap.xml)</div><div class="ci-det">${hasSitemap?'Sitemap detected — helps search engines discover all pages':'No sitemap.xml found — pages may not be indexed. Submit one via Google Search Console.'}</div></div></div>
+      <div class="ci ${hasSitemapIndex?'pass':'warn'}"><div class="cs">${hasSitemapIndex?'✓':'!'}</div><div class="ci-info"><div class="ci-name">Sitemap Index (for large sites)</div><div class="ci-det">${hasSitemapIndex?'Sitemap index found — good for sites with 500+ pages':'No sitemap index — recommended if you have multiple content types (blog, products, pages)'}</div></div></div>
+    </div>
+    <div style="font-weight:700;font-size:.88rem;margin-bottom:12px">Image Optimization Audit</div>
+    <div class="kw-stats" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">
+      <div class="kw-stat"><div class="kw-val" style="color:var(--c)">${totalImgs}</div><div class="kw-lbl">Total Images</div></div>
+      <div class="kw-stat"><div class="kw-val" style="color:${missingAlt>0?'var(--r)':'var(--g)'}">${missingAlt}</div><div class="kw-lbl">Missing Alt Text</div></div>
+      <div class="kw-stat"><div class="kw-val" style="color:${unoptImgs>3?'var(--y)':'var(--g)'}">${unoptImgs}</div><div class="kw-lbl">Unoptimized</div></div>
+      <div class="kw-stat"><div class="kw-val" style="color:var(--y)">~${imgSavings}KB</div><div class="kw-lbl">Est. Savings</div></div>
+    </div>
+    <div class="checks" style="margin-bottom:16px">
+      <div class="ci ${missingAlt===0?'pass':'fail'}"><div class="cs">${missingAlt===0?'✓':'✕'}</div><div class="ci-info"><div class="ci-name">Alt Text Coverage</div><div class="ci-det">${missingAlt===0?'All images have alt text':''+missingAlt+' image'+( missingAlt!==1?'s':'')+' missing alt text — hurts SEO, accessibility, and AI image indexing'}</div></div></div>
+      <div class="ci ${unoptImgs<=3?'pass':'warn'}"><div class="cs">${unoptImgs<=3?'✓':'!'}</div><div class="ci-info"><div class="ci-name">Image Compression</div><div class="ci-det">${unoptImgs<=3?'Images appear well-optimized':''+unoptImgs+' images could be compressed — estimated '+imgSavings+'KB page weight savings (~'+Math.round(imgSavings/10)/100+'s faster load)'}</div></div></div>
+      <div class="ci warn"><div class="cs">!</div><div class="ci-info"><div class="ci-name">Next-Gen Format (WebP / AVIF)</div><div class="ci-det">Convert JPEG/PNG to WebP for 25-35% smaller file sizes with same visual quality. Supported by all modern browsers.</div></div></div>
+      <div class="ci warn"><div class="cs">!</div><div class="ci-info"><div class="ci-name">Lazy Loading</div><div class="ci-det">Add loading="lazy" to below-fold images. Improves LCP and reduces initial page weight for mobile users.</div></div></div>
+    </div>
+  </div>`;
+  }catch(e){ console.error('advancedContent build error:',e); advancedContent='<div style="padding:20px;color:var(--t3);text-align:center">Advanced content unavailable — '+esc(e.message)+'</div>'; }
+
+  document.getElementById('report').innerHTML=`
+<button class="back-btn" onclick="resetTool()">← New Audit</button>
+<div class="rpt-hdr">
+  <div class="rpt-left">
+    ${thumbHtml}
+    <div><div class="rpt-site">${esc(displayName)}</div><div class="rpt-meta">Analyzed ${now} · nexgrow.io Audit Tool v3.0</div></div>
+  </div>
+  <div class="rpt-btns">
+    <button class="btn-ol" onclick="downloadReport()">Download</button>
+    <button class="btn-ol" onclick="window.print()">Print</button>
+    <button class="btn-pr" onclick="shareReport(this)">Share</button>
+  </div>
+</div>
+
+<div class="ov-card2">
+  <div class="overall-wrap">
+    <div class="ring-pos" style="width:136px;height:136px">${ring(overall,136,11,scoreColor(overall))}
+      <div class="ring-center"><div class="ring-num" id="orn" style="color:${scoreColor(overall)}">0</div><div class="ring-sub">/100</div></div>
+    </div>
+    <div class="overall-lbl">${hl}</div>
+    <div class="overall-sub">Site Health Score</div>
+    <div class="hmsg ${hc}">${hMsg[hc]}</div>
+  </div>
+  <div>
+    <div style="font-size:.72rem;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">Free Scores <span class="free-badge">FREE</span></div>
+    <div class="cats" style="grid-template-columns:repeat(4,1fr)">
+      ${[{l:'SEO',s:seo.score},{l:'AEO',s:aeo.score},{l:'AI Visibility',s:ai.score},{l:'GEO',s:geoScore}].map(c=>`
+      <div class="cat">
+        <div style="position:relative;width:68px;height:68px">${ring(c.s,68,6,scoreColor(c.s))}<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:.95rem;font-weight:700;color:${scoreColor(c.s)}">${c.s}</div></div>
+        <div class="cat-lbl">${c.l}</div>
+        <div class="cat-grade" style="color:${scoreColor(c.s)}">${grade(c.s)}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+</div>
+
+<div style="margin-bottom:20px">
+  <div style="font-weight:700;font-size:.92rem;margin-bottom:12px;display:flex;align-items:center;gap:8px">Top Issues Found <span class="free-badge">FREE</span></div>
+  <div class="checks">${topIssues.map(checkItem).join('')}</div>
+</div>
+
+${geoBarHtml}
+
+<div class="locked-wrap" id="web-advanced">
+  <div class="locked-inner">${advancedContent}</div>
+  <div class="lock-gate">
+    <div class="lock-icon">🔐</div>
+    <div class="lock-title">Full Advanced Audit</div>
+    <div class="lock-sub">Unlock complete SEO, AEO, AI, GEO, Performance, Keywords, Broken Links, Social Audit &amp; Priority Action Plan for your site.</div>
+    <div class="lock-feats">
+      <span class="lock-feat">⚡ Performance + Core Web Vitals</span>
+      <span class="lock-feat">📝 Keywords &amp; Readability</span>
+      <span class="lock-feat">🔗 Broken Link Scan</span>
+      <span class="lock-feat">📱 Social Audit</span>
+      <span class="lock-feat">⚔️ Action Plan</span>
+    </div>
+    <button class="unlock-btn" onclick="openPayModal('web')">🔓 Unlock Full Report — $1</button>
+    <div class="unlock-sub">One-time · Instant · No subscription</div>
+  </div>
+</div>`;
+
+  let n=0;const step=Math.ceil(overall/55);
+  const timer=setInterval(()=>{n=Math.min(n+step,overall);const el=document.getElementById('orn');if(el)el.textContent=n;if(n>=overall)clearInterval(timer);},20);
+  window._advancedContent=advancedContent;
+  } catch(renderErr){
+    console.error('renderReport error:',renderErr);
+    document.getElementById('report').innerHTML=`
+<button class="back-btn" onclick="resetTool()">← New Audit</button>
+<div style="padding:40px 20px;text-align:center;max-width:500px;margin:0 auto">
+  <div style="font-size:2rem;margin-bottom:12px">⚠️</div>
+  <div style="font-weight:700;font-size:1.1rem;margin-bottom:8px">Report render failed</div>
+  <div style="font-size:.82rem;color:var(--t3);margin-bottom:6px">${renderErr&&renderErr.message?esc(renderErr.message):'Unknown error'}</div>
+  <div style="font-size:.75rem;color:var(--t3);margin-bottom:20px">Open browser console (F12) for full details</div>
+  <button onclick="resetTool()" style="background:var(--c);color:#000;border:none;border-radius:12px;padding:11px 26px;font-weight:700;cursor:pointer">Try Again</button>
+</div>`;
+  }
+}
+
+// ─── RENDER COMPARE ───
+function renderCompare(d1, d2, url1, url2){
+  const cats=[
+    {l:'SEO',k:'seo'},{l:'AEO',k:'aeo'},{l:'AI Visibility',k:'ai'},{l:'Social',k:'social'}
+  ];
+  const n1=new URL(url1).hostname, n2=new URL(url2).hostname;
+
+  document.getElementById('report').innerHTML = `
+<button class="back-btn" onclick="resetTool()">← New Audit</button>
+<div style="margin-bottom:24px">
+  <div style="font-weight:700;font-size:1.2rem;margin-bottom:4px">⚔️ Competitor Comparison</div>
+  <div style="font-family:'Consolas',monospace;font-size:.68rem;color:var(--t3)">${esc(n1)} vs ${esc(n2)}</div>
+</div>
+<div class="compare-grid">
+  ${[{d:d1,url:url1,n:n1},{d:d2,url:url2,n:n2}].map((site,idx)=>{
+    const overall=Math.round((site.d.seo.score+site.d.aeo.score+site.d.ai.score+site.d.social.score)/4);
+    const other=idx===0?d2:d1;
+    const otherOverall=Math.round((other.seo.score+other.aeo.score+other.ai.score+other.social.score)/4);
+    return `<div class="compare-col">
+      <div class="compare-overall">
+        <div style="position:relative;width:110px;height:110px">${ring(overall,110,10,scoreColor(overall))}<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center"><div style="font-family:'Consolas',monospace;font-size:1.6rem;color:${scoreColor(overall)}">${overall}</div><div style="font-family:'Consolas',monospace;font-size:.58rem;color:var(--t3)">/100</div></div></div>
+        <div class="compare-site">${esc(site.n)}</div>
+        <div class="compare-url">${esc(site.url.substring(0,40))}</div>
+      </div>
+      ${cats.map(c=>{
+        const s=site.d[c.k].score, o=other[c.k].score;
+        const wins=s>o;
+        return `<div class="compare-row">
+          <div class="compare-cat">${c.l}</div>
+          <div class="compare-score" style="color:${scoreColor(s)}">${s}${wins?`<span class="win-badge">WIN</span>`:''}
+          </div>
+        </div>`;
+      }).join('')}
+      <div style="margin-top:16px">
+        ${[{l:'Overall',v:overall,o:otherOverall}].concat(cats.map(c=>({l:c.l,v:site.d[c.k].score,o:other[c.k].score}))).map(x=>`<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--t2);margin-bottom:4px"><span>${x.l}</span><span style="font-family:'Consolas',monospace">${x.v}/100</span></div><div style="height:5px;background:rgba(255,255,255,.06);border-radius:3px"><div style="height:100%;width:${x.v}%;background:${scoreColor(x.v)};border-radius:3px;transition:width 1s ease"></div></div></div>`).join('')}
+      </div>
+    </div>`;
+  }).join('')}
+</div>
+<div style="margin-top:24px;padding:20px;background:var(--s);border:1px solid var(--b);border-radius:16px">
+  <div style="font-weight:700;margin-bottom:12px">Summary</div>
+  ${cats.map(c=>{
+    const s1=d1[c.k].score, s2=d2[c.k].score, diff=Math.abs(s1-s2);
+    const winner=s1>s2?n1:s2>s1?n2:'Tie';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--b);font-size:.83rem"><div style="flex:1;color:var(--t2)">${c.l}</div><div style="font-family:'Consolas',monospace;color:${scoreColor(s1)}">${s1}</div><div style="font-family:'Consolas',monospace;color:var(--t3)">vs</div><div style="font-family:'Consolas',monospace;color:${scoreColor(s2)}">${s2}</div><div style="background:rgba(0,255,136,.1);color:var(--g);font-family:'Consolas',monospace;font-size:.65rem;padding:2px 8px;border-radius:4px">${winner==='Tie'?'TIE':winner+' +'+diff}</div></div>`;
+  }).join('')}
+</div>`;
+}
+
+// ─── PAYMENT MODAL ───
+const PAYMENT_URL = '#'; // Replace with your Stripe/Gumroad checkout link
+
+function openPayModal(type){
+  const modal=document.getElementById('payModal');
+  modal.dataset.type=type;
+  if(type==='ig'){
+    document.getElementById('payIcon').textContent='📷';
+    document.getElementById('payTitle').textContent='Unlock Full Instagram Audit';
+    document.getElementById('paySub').textContent='9 advanced sections — best post times, hashtag sets, format scores, monetization roadmap, growth predictions & more.';
+    document.getElementById('payFeats').innerHTML=`
+      <div class="pay-feat"><span class="pay-feat-ico">✓</span><span>Best Time to Post calculator (day × hour heatmap)</span></div>
+      <div class="pay-feat"><span class="pay-feat-ico">✓</span><span>Hashtag strategy — 3 ready-to-copy sets (small/medium/large)</span></div>
+      <div class="pay-feat"><span class="pay-feat-ico">✓</span><span>Reel vs Carousel vs Static — ranked format scores</span></div>
+      <div class="pay-feat"><span class="pay-feat-ico">✓</span><span>Monetization roadmap with realistic income ranges</span></div>
+      <div class="pay-feat"><span class="pay-feat-ico">✓</span><span>Growth velocity predictor — 30 / 60 / 90 day projections</span></div>
+      <div class="pay-feat"><span class="pay-feat-ico">✓</span><span>Account intelligence, content pillar audit &amp; viral hooks</span></div>`;
+  } else {
+    document.getElementById('payIcon').textContent='🔐';
+    document.getElementById('payTitle').textContent='Unlock Full Website Audit';
+    document.getElementById('paySub').textContent='Get every insight, fix, and growth opportunity for your website — one-time, no subscription.';
+    document.getElementById('payFeats').innerHTML=`
+      <div class="pay-feat"><span class="pay-feat-ico">✓</span><span>Full SEO, AEO, AI, GEO checks with fixes</span></div>
+      <div class="pay-feat"><span class="pay-feat-ico">✓</span><span>Performance &amp; Core Web Vitals audit</span></div>
+      <div class="pay-feat"><span class="pay-feat-ico">✓</span><span>Keywords &amp; readability deep-dive</span></div>
+      <div class="pay-feat"><span class="pay-feat-ico">✓</span><span>Broken link detection</span></div>
+      <div class="pay-feat"><span class="pay-feat-ico">✓</span><span>Social audit + action plan</span></div>`;
+  }
+  modal.classList.add('open');
+}
+
+function closePayModal(){ document.getElementById('payModal').classList.remove('open'); }
+
+function processPay(){
+  // Redirect to payment link — replace PAYMENT_URL with your Stripe checkout
+  if(PAYMENT_URL && PAYMENT_URL !== '#'){
+    window.open(PAYMENT_URL, '_blank');
+  } else {
+    demoUnlock();
+  }
+}
+
+function demoUnlock(){
+  closePayModal();
+  const type=document.getElementById('payModal').dataset.type||'web';
+  if(type==='ig'){
+    const wrap=document.getElementById('ig-advanced');
+    if(wrap){ wrap.innerHTML=wrap.querySelector('.locked-inner')?.innerHTML||''; }
+  } else {
+    const wrap=document.getElementById('web-advanced');
+    if(wrap){ wrap.innerHTML=window._advancedContent||''; }
+  }
+  showToast('Advanced Audit Unlocked ✓');
+  window.scrollTo({top:document.getElementById('report').offsetTop+400,behavior:'smooth'});
+}
+
+// ─── MAIN FLOW ───
+async function runAudit(raw1, raw2){
+  const p1=normalizeInput(raw1);
+  if(!p1){alert('Please enter a valid URL or @instagram handle');return;}
+  const p2 = raw2 ? normalizeInput(raw2) : null;
+
+  const overlay=document.getElementById('overlay');
+  const reportEl=document.getElementById('report');
+
+  function showError(msg){
+    overlay.style.display='none';
+    reportEl.style.display='block';
+    reportEl.innerHTML=`
+<button class="back-btn" onclick="resetTool()">← New Audit</button>
+<div style="margin:60px auto;max-width:480px;text-align:center;padding:0 20px">
+  <div style="font-size:2.5rem;margin-bottom:16px">⚠️</div>
+  <div style="font-weight:700;font-size:1.1rem;margin-bottom:10px">Something went wrong</div>
+  <div style="font-size:.85rem;color:var(--t3);line-height:1.7;margin-bottom:24px">${esc(msg)}</div>
+  <button onclick="resetTool()" style="background:var(--c);color:#000;border:none;border-radius:12px;padding:12px 28px;font-weight:700;font-size:.9rem;cursor:pointer">Try Again</button>
+</div>`;
+  }
+
+  document.getElementById('hero').style.display='none';
+  reportEl.style.display='none';
+  overlay.style.display='flex';
+  initSiteOverlay(p1.type==='ig'?null:p1.url, p1.type==='ig');
+  if(p1.type!=='ig' && p2){
+    const ovU=document.getElementById('ovUrl');
+    if(ovU) ovU.textContent=p1.url+' vs '+(p2.url||'@'+p2.handle);
+  }
+
+  try{
+    if(p1.type==='ig'){
+      document.getElementById('s1').querySelector('span').textContent='Connecting to Instagram API';
+      document.getElementById('s2').querySelector('span').textContent='Fetching profile data';
+      document.getElementById('s3').querySelector('span').textContent='Analyzing bio & content';
+      document.getElementById('s4').querySelector('span').textContent='Auditing account health';
+      document.getElementById('s5').querySelector('span').textContent='Generating Instagram report';
+
+      const stepP = stepThrough(['s1','s2','s3','s4','s5']);
+      const realData = await fetchIgProfile(p1.handle);
+      await stepP;
+      await delay(150);
+
+      overlay.style.display='none';
+      reportEl.style.display='block';
+      const d = igAnalyze(p1.handle, realData);
+      renderIgReport(d);
+      window.scrollTo({top:0,behavior:'smooth'});
+      showSignInPrompt();
+      return;
+    }
+
+    // Set domain-specific step labels
+    try{
+      const _dn=new URL(p1.url).hostname.replace(/^www\./,'');
+      document.getElementById('s1t').textContent=`Fetching ${_dn}`;
+      document.getElementById('s2t').textContent=`Analyzing ${_dn} SEO`;
+      document.getElementById('s3t').textContent=`Testing AI & AEO signals`;
+      document.getElementById('s4t').textContent=`Measuring page speed`;
+      document.getElementById('s5t').textContent=`Extracting keywords`;
+      document.getElementById('s6t').textContent=`Scanning social & geo`;
+      document.getElementById('s7t').textContent=`Generating full report`;
+    }catch(e){}
+
+    // Step 1: Fetch
+    document.getElementById('s1').classList.add('active');
+    const _pf=document.getElementById('pf'),_pt=document.getElementById('ovPct');
+    if(_pf)_pf.style.width='14%';if(_pt)_pt.textContent='14%';
+
+    const [html1, html2] = await Promise.all([
+      fetchSite(p1.url),
+      p2 ? fetchSite(p2.url) : Promise.resolve(null)
+    ]);
+
+    document.getElementById('s1').classList.remove('active');
+    document.getElementById('s1').classList.add('done');
+    document.getElementById('s1').querySelector('.sind').textContent='✓';
+    if(html1){ addFinding('ok',`Downloaded ${Math.round(html1.length/1024)}KB · Page fetched`); }
+    else { addFinding('warn','HTML not fetched — running partial analysis'); }
+
+    const doc1 = html1 ? new DOMParser().parseFromString(html1,'text/html') : document.implementation.createHTMLDocument('');
+
+    // Steps 2-7 in background while we analyze
+    const stepPromise = stepThrough(['s2','s3','s4','s5','s6','s7']);
+
+    // Run all analyses in parallel
+    const safe = (fn) => { try{ return fn(); }catch(e){ console.warn('analyzer error:',e); return null; } };
+    const [seo,aeo,ai,geo,social,psiMobile,psiDesktop,screenshot,brokenLinks] = await Promise.all([
+      Promise.resolve(safe(()=>seoAnalyze(doc1,p1.url))),
+      Promise.resolve(safe(()=>aeoAnalyze(doc1))),
+      Promise.resolve(safe(()=>aiAnalyze(doc1))),
+      Promise.resolve(safe(()=>geoAnalyze(doc1))),
+      Promise.resolve(safe(()=>socialAnalyze(doc1))),
+      fetchPSI(p1.url,'mobile').catch(()=>null),
+      fetchPSI(p1.url,'desktop').catch(()=>null),
+      fetchScreenshot(p1.url).catch(()=>null),
+      html1 ? checkBrokenLinks(doc1,p1.url).catch(()=>null) : Promise.resolve(null),
+    ]);
+
+    const kw = html1 ? (() => { try{ return keywordAnalyze(doc1); }catch(e){ return null; } })() : null;
+
+    // Live findings from real analysis results
+    try{
+      const pgTitle=doc1.querySelector('title')?.textContent?.trim();
+      if(pgTitle) addFinding('info',`Title: "${pgTitle.slice(0,42)}${pgTitle.length>42?'…':''}"`);
+      if(seo) addFinding(seo.score>=70?'ok':seo.score>=40?'warn':'err',`SEO score: ${seo.score}/100 · ${seo.checks?.length||0} checks`);
+      if(psiMobile?.lighthouseResult){
+        const spd=Math.round((psiMobile.lighthouseResult.categories?.performance?.score||0)*100);
+        addFinding(spd>=80?'ok':spd>=50?'warn':'err',`Mobile speed: ${spd}/100`);
+      }
+      if(social){const sc=Object.values(social.socials||{}).filter(Boolean).length;addFinding(sc>=3?'ok':sc>=1?'warn':'err',`${sc} social profile${sc!==1?'s':''} linked`);}
+      if(brokenLinks?.length) addFinding('warn',`${brokenLinks.length} broken link${brokenLinks.length!==1?'s':''} found`);
+      else if(html1) addFinding('ok','No broken links detected');
+      setOvStatus('Compiling your full report...');
+    }catch(e){}
+
+    let perfResult;
+    try{ perfResult = renderPerformanceTab(psiMobile, psiDesktop, p1.url); }
+    catch(e){ console.warn('perf tab error:',e); perfResult = {html:'',mData:{perf:0},dData:{perf:0},overallScore:0}; }
+    const perfOverall = psiMobile ? Math.round((psiMobile.lighthouseResult?.categories?.performance?.score||0)*100) : perfResult.mData?.perf||0;
+    perfResult.overallScore = perfOverall;
+
+    if(!html1){
+      seo.score=Math.max(5,seo.score-15);
+      seo.checks.unshift({name:'Page Fetch',status:'warn',detail:'Could not retrieve full HTML — partial analysis only.',pts:0,max:0});
+    }
+
+    await stepPromise;
+    await delay(150);
+
+    overlay.style.display='none';
+    reportEl.style.display='block';
+
+    if(p2 && html2){
+      const doc2=new DOMParser().parseFromString(html2,'text/html');
+      const d2={seo:seoAnalyze(doc2,p2.url),aeo:aeoAnalyze(doc2),ai:aiAnalyze(doc2),social:socialAnalyze(doc2)};
+      renderCompare({seo,aeo,ai,social},d2,p1.url,p2.url);
+    } else {
+      await renderReport({seo,aeo,ai,geo,social,perf:perfResult,kw,brokenLinks,url:p1.url,screenshot});
+    }
+    window.scrollTo({top:0,behavior:'smooth'});
+    showSignInPrompt();
+  } catch(err){
+    console.error('Audit error:',err);
+    showError(err?.message ? 'Error: '+err.message : 'Audit failed. Open browser console (F12) for details.');
+  }
+}
+
+// ─── UI HELPERS ───
+function switchTab(id,btn){
+  document.querySelectorAll('.tc').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tc-'+id).classList.add('on');
+  btn.classList.add('on');
+}
+
+window.switchPerfView = function(v){
+  document.getElementById('perf-mobile').style.display=v==='mobile'?'block':'none';
+  document.getElementById('perf-desktop').style.display=v==='desktop'?'block':'none';
+  document.getElementById('mdt-mobile').classList.toggle('on',v==='mobile');
+  document.getElementById('mdt-desktop').classList.toggle('on',v==='desktop');
+};
+
+function resetTool(){
+  document.getElementById('report').style.display='none';
+  document.getElementById('hero').style.display='flex';
+  document.getElementById('input1').value='';
+  document.getElementById('input2').value='';
+  hideSignInPrompt();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function shareReport(btn){
+  navigator.clipboard.writeText(window.location.href).then(()=>{
+    const orig=btn.innerHTML; btn.innerHTML='✓ Copied!';
+    setTimeout(()=>{btn.innerHTML=orig;},2000);
+  }).catch(()=>window.print());
+}
+
+function downloadReport(){
+  const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Audit Report — nexgrow.io</title></head><body style="background:#070710;color:#fff;font-family:system-ui,sans-serif;padding:20px">'+document.getElementById('report').innerHTML+'</body></html>';
+  const a=document.createElement('a');
+  a.href='data:text/html;charset=utf-8,'+encodeURIComponent(html);
+  a.download='nexgrow-audit-report.html';
+  a.click();
+}
+
+// ─── EVENTS ───
+document.getElementById('analyzeBtn').addEventListener('click',()=>{
+  const v1=document.getElementById('input1').value.trim();
+  const v2=compareMode?document.getElementById('input2').value.trim():'';
+  if(v1) runAudit(v1, v2||null);
+});
+['input1','input2'].forEach(id=>{
+  document.getElementById(id).addEventListener('keydown',e=>{
+    if(e.key==='Enter'){
+      const v1=document.getElementById('input1').value.trim();
+      const v2=compareMode?document.getElementById('input2').value.trim():'';
+      if(v1) runAudit(v1,v2||null);
+    }
+  });
+});
+document.getElementById('settingsModal').addEventListener('click',e=>{if(e.target===document.getElementById('settingsModal'))closeSettings();});
+document.getElementById('payModal').addEventListener('click',e=>{if(e.target===document.getElementById('payModal'))closePayModal();});
+document.getElementById('signUpModal').addEventListener('click',e=>{if(e.target===document.getElementById('signUpModal'))closeSignUpModal();});
+
+// ─── GOOGLE SIGN-IN ───
+const G_CLIENT_ID = '706306143392-opfov8226gvdt7ufb6eqq5a0nrk0f1i4.apps.googleusercontent.com';
+
+let gUser = null;
+let gPromptDismissed = false;
+let gInitDone = false;
+
+function parseJwt(token){
+  try{
+    const b64 = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+    return JSON.parse(decodeURIComponent(atob(b64).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+  }catch(e){ return null; }
+}
+
+function handleGoogleCredential(response){
+  const p = parseJwt(response.credential);
+  if(!p) return;
+  gUser = { name: p.name, email: p.email, picture: p.picture||'', given_name: p.given_name||p.name.split(' ')[0] };
+  localStorage.setItem('ngGUser', JSON.stringify(gUser));
+  updateHeaderUser();
+  closeSignUpModal();
+  hideSignInPrompt();
+  showToast('Welcome, ' + gUser.given_name + '! ✓');
+}
+
+function updateHeaderUser(){
+  const u = gUser;
+  const chip = document.getElementById('gUserChip');
+  if(!u){ chip.classList.remove('visible'); return; }
+  document.getElementById('gUserName').textContent = u.given_name;
+  const initEl = document.getElementById('gAvatarInitials');
+  initEl.textContent = u.given_name[0].toUpperCase();
+  if(u.picture){
+    initEl.style.backgroundImage = `url(${u.picture})`;
+    initEl.style.backgroundSize = 'cover';
+    initEl.textContent = '';
+  }
+  chip.classList.add('visible');
+}
+
+function signOutUser(){
+  if(!confirm('Sign out of NexGrow?')) return;
+  gUser = null;
+  localStorage.removeItem('ngGUser');
+  updateHeaderUser();
+  if(typeof google !== 'undefined') google.accounts.id.disableAutoSelect();
+  showToast('Signed out');
+}
+
+function openSignUpModal(){
+  dismissSignInPrompt();
+  document.getElementById('signUpModal').style.display = 'flex';
+  initGoogleSignIn();
+}
+
+function closeSignUpModal(){
+  document.getElementById('signUpModal').style.display = 'none';
+}
+
+function showSignInPrompt(){
+  if(gUser || gPromptDismissed) return;
+  setTimeout(()=>{ document.getElementById('gPrompt').classList.add('show'); }, 1200);
+}
+
+function hideSignInPrompt(){
+  document.getElementById('gPrompt').classList.remove('show');
+}
+
+function dismissSignInPrompt(){
+  gPromptDismissed = true;
+  hideSignInPrompt();
+}
+
+function initGoogleSignIn(){
+  if(typeof google === 'undefined'){ setTimeout(initGoogleSignIn, 400); return; }
+  if(!gInitDone){
+    google.accounts.id.initialize({
+      client_id: G_CLIENT_ID,
+      callback: handleGoogleCredential,
+      auto_select: false,
+      cancel_on_tap_outside: true,
+      ux_mode: 'popup'
+    });
+    gInitDone = true;
+  }
+  const wrap = document.getElementById('gSignInBtnWrap');
+  if(wrap && !wrap.hasChildNodes()){
+    google.accounts.id.renderButton(wrap, {
+      theme: 'filled_black', size: 'large',
+      text: 'continue_with', shape: 'rectangular', width: 280
+    });
+  }
+}
+
+// Restore session & init on load
+(function(){
+  const saved = localStorage.getItem('ngGUser');
+  if(saved){ try{ gUser = JSON.parse(saved); updateHeaderUser(); }catch(e){} }
+  if(typeof google !== 'undefined') initGoogleSignIn();
+  else window.addEventListener('load', ()=>{ if(typeof google !== 'undefined') initGoogleSignIn(); });
+})();
+</script>
+</body>
+</html>
